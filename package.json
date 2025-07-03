@@ -2,7 +2,7 @@
   "name": "artist-portfolio",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://yourusername.github.io/artist-portfolio",
+
   "dependencies": {
     "@react-three/drei": "^10.4.2",
     "@react-three/fiber": "^9.1.4",
