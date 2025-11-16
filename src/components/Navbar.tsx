@@ -1,111 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import styled from 'styled-components';
-import { gsap } from 'gsap';
-
-const Nav = styled.nav<{ scrolled: boolean }>`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  padding: 24px;
-  background: linear-gradient(rgba(19, 19, 19, 0.4) 0%, rgba(19, 19, 19, 0.15) 50.4505%, rgba(19, 19, 19, 0) 100%);
-  width: 100%;
-  transition: all 0.3s ease;
-`;
-
-const NavContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  
-  @media (max-width: 768px) {
-    justify-content: space-between;
-  }
-`;
-
-const Logo = styled(Link)`
-  font-size: 14px;
-  font-weight: bold;
-  text-decoration: none;
-  color: rgb(240, 45, 110);
-  font-family: 'Inter', sans-serif;
-  font-weight: 700;
-  text-transform: uppercase;
-  text-align: center;
-`;
-
-
-
-const NavLink = styled.a<{ active: boolean }>`
-  text-decoration: none;
-  color: rgb(240, 45, 110);
-  font-family: 'Inter', sans-serif;
-  font-size: 16px;
-  font-weight: 700;
-  text-transform: uppercase;
-  text-align: center;
-  line-height: 2em;
-  position: relative;
-  transition: color 0.3s ease;
-  cursor: pointer;
-  
-  &:hover {
-    color: rgb(240, 45, 110);
-    opacity: 0.8;
-  }
-`;
-
-const MobileMenuButton = styled.button`
-  display: none;
-  flex-direction: column;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0.5rem;
-  
-  @media (max-width: 768px) {
-    display: flex;
-  }
-`;
-
-const MenuLine = styled.span<{ isOpen: boolean; index: number }>`
-  width: 25px;
-  height: 3px;
-  background: #333;
-  margin: 2px 0;
-  transition: all 0.3s ease;
-  transform-origin: center;
-  
-  ${props => props.isOpen && props.index === 0 && `
-    transform: rotate(45deg) translate(6px, 6px);
-  `}
-  
-  ${props => props.isOpen && props.index === 1 && `
-    opacity: 0;
-  `}
-  
-  ${props => props.isOpen && props.index === 2 && `
-    transform: rotate(-45deg) translate(6px, -6px);
-  `}
-`;
-
-const Overlay = styled.div<{ isOpen: boolean }>`
-  display: ${props => props.isOpen ? 'block' : 'none'};
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 999;
-  
-  @media (min-width: 769px) {
-    display: none;
-  }
-`;
 
 const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -120,10 +14,6 @@ const Navbar: React.FC = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [location]);
 
   const navItems = [
     { href: '#sculture', label: 'Collezione' },
@@ -142,34 +32,82 @@ const Navbar: React.FC = () => {
 
   return (
     <>
-      <Nav scrolled={isScrolled}>
-        <NavContainer>
-          <Logo to="/">ALF</Logo>
-          
+      <nav
+        className="fixed top-0 left-0 right-0 z-[1000] p-6 w-full transition-all duration-300"
+        style={{
+          background: 'linear-gradient(rgba(19, 19, 19, 0.4) 0%, rgba(19, 19, 19, 0.15) 50.4505%, rgba(19, 19, 19, 0) 100%)'
+        }}
+      >
+        <div className="flex justify-between items-center w-full">
+          <Link
+            to="/"
+            className="text-sm font-bold no-underline font-sans uppercase text-center text-accent"
+          >
+            ALF
+          </Link>
+
+          {/* Desktop Menu Items */}
           {navItems.map((item, index) => (
-            <NavLink
+            <a
               key={index}
               onClick={() => handleNavClick(item.href)}
-              active={false}
+              className="hidden md:block no-underline font-sans text-base font-bold uppercase text-center leading-8 relative cursor-pointer text-accent"
             >
               {item.label}
-            </NavLink>
+            </a>
           ))}
-          
-          <MobileMenuButton
+
+          {/* Mobile Hamburger Button */}
+          <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="md:hidden flex flex-col gap-1.5 w-8 h-6 justify-center items-center z-[1001]"
+            aria-label="Toggle menu"
           >
-            <MenuLine isOpen={isMobileMenuOpen} index={0} />
-            <MenuLine isOpen={isMobileMenuOpen} index={1} />
-            <MenuLine isOpen={isMobileMenuOpen} index={2} />
-          </MobileMenuButton>
-        </NavContainer>
-      </Nav>
-      
-      <Overlay
-        isOpen={isMobileMenuOpen}
-        onClick={() => setIsMobileMenuOpen(false)}
-      />
+            <span
+              className={`w-full h-0.5 bg-accent transition-all duration-300 ${
+                isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''
+              }`}
+            />
+            <span
+              className={`w-full h-0.5 bg-accent transition-all duration-300 ${
+                isMobileMenuOpen ? 'opacity-0' : ''
+              }`}
+            />
+            <span
+              className={`w-full h-0.5 bg-accent transition-all duration-300 ${
+                isMobileMenuOpen ? '-rotate-45 -translate-y-2' : ''
+              }`}
+            />
+          </button>
+        </div>
+      </nav>
+
+      {/* Mobile Menu */}
+      <div
+        className={`fixed top-0 right-0 h-screen w-64 bg-secondary z-[999] transform transition-transform duration-300 md:hidden ${
+          isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
+        <div className="flex flex-col gap-6 pt-24 px-8">
+          {navItems.map((item, index) => (
+            <a
+              key={index}
+              onClick={() => handleNavClick(item.href)}
+              className="no-underline font-sans text-lg font-bold uppercase text-accent hover:opacity-70 transition-opacity cursor-pointer"
+            >
+              {item.label}
+            </a>
+          ))}
+        </div>
+      </div>
+
+      {/* Overlay */}
+      {isMobileMenuOpen && (
+        <div
+          onClick={() => setIsMobileMenuOpen(false)}
+          className="fixed inset-0 bg-black bg-opacity-50 z-[998] md:hidden"
+        />
+      )}
     </>
   );
 };
