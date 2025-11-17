@@ -15,9 +15,10 @@ export default {
         background: '#131313',
       },
       fontFamily: {
-        sans: ['Palanquin', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Helvetica Neue', 'Arial', 'sans-serif'],
-        serif: ['Playfair Display', 'serif'],
-        palanquin: ['Palanquin', 'sans-serif'],
+        sans: ['Montserrat', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Helvetica Neue', 'Arial', 'sans-serif'],
+        serif: ['Montserrat', 'sans-serif'],
+        heading: ['Montserrat', 'sans-serif'],
+        body: ['Montserrat', 'sans-serif'],
       },
       screens: {
         mobile: '768px',

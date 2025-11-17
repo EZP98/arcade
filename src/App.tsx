@@ -8,9 +8,15 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Collezione from './pages/Collezione';
 import Content from './pages/Content';
 import OperaForm from './pages/OperaForm';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsConditions from './pages/TermsConditions';
 
 // Import components
 import Navbar from './components/Navbar';
+import SmoothScroll from './components/SmoothScroll';
+
+// Import i18n
+import { LanguageProvider } from './i18n/LanguageContext';
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger);
@@ -25,29 +31,43 @@ function AppContent() {
 
     // Smooth scroll setup
     ScrollTrigger.refresh();
+
+    // Scroll to top on page load/refresh
+    window.scrollTo(0, 0);
   }, []);
 
+  // Scroll to top on route change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
   return (
-    <div className="min-h-screen flex flex-col bg-background text-primary font-sans leading-relaxed overflow-x-hidden">
-      {showNavbar && <Navbar />}
-      <main className="flex-1">
-        <Routes>
-          <Route path="/" element={<Collezione />} />
-          <Route path="/collezione" element={<Collezione />} />
-          <Route path="/content" element={<Content />} />
-          <Route path="/content/opera" element={<OperaForm />} />
-        </Routes>
-      </main>
-    </div>
+    <SmoothScroll>
+      <div className="min-h-screen flex flex-col bg-background text-primary font-sans leading-relaxed overflow-x-hidden">
+        {showNavbar && <Navbar />}
+        <main className="flex-1">
+          <Routes>
+            <Route path="/" element={<Collezione />} />
+            <Route path="/collezione" element={<Collezione />} />
+            <Route path="/content" element={<Content />} />
+            <Route path="/content/opera" element={<OperaForm />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsConditions />} />
+          </Routes>
+        </main>
+      </div>
+    </SmoothScroll>
   );
 }
 
 function App() {
   return (
     <HelmetProvider>
-      <Router>
-        <AppContent />
-      </Router>
+      <LanguageProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </LanguageProvider>
     </HelmetProvider>
   );
 }
