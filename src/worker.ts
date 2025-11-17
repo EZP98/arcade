@@ -391,6 +391,64 @@ export default {
         });
       }
 
+      // ========== NEWSLETTER ==========
+
+      // POST /api/newsletter - Iscriviti alla newsletter
+      if (path === '/api/newsletter' && method === 'POST') {
+        const body = await request.json() as { email: string };
+        const { email } = body;
+
+        if (!email || !email.includes('@')) {
+          return jsonResponse({ error: 'Valid email is required' }, 400);
+        }
+
+        // Controlla se l'email esiste già
+        const existing = await env.DB.prepare(
+          'SELECT id FROM newsletter_subscribers WHERE email = ?'
+        ).bind(email.toLowerCase()).first();
+
+        if (existing) {
+          return jsonResponse({
+            message: 'Email already subscribed',
+            alreadySubscribed: true
+          }, 200);
+        }
+
+        // Aggiungi la nuova email
+        const ipAddress = request.headers.get('CF-Connecting-IP') || request.headers.get('X-Real-IP') || 'unknown';
+        const userAgent = request.headers.get('User-Agent') || 'unknown';
+
+        await env.DB.prepare(
+          `INSERT INTO newsletter_subscribers (email, ip_address, user_agent)
+           VALUES (?, ?, ?)`
+        ).bind(email.toLowerCase(), ipAddress, userAgent).run();
+
+        return jsonResponse({
+          message: 'Successfully subscribed to newsletter',
+          email: email.toLowerCase()
+        }, 201);
+      }
+
+      // GET /api/newsletter - Lista iscritti (per backoffice)
+      if (path === '/api/newsletter' && method === 'GET') {
+        const { results } = await env.DB.prepare(
+          'SELECT id, email, subscribed_at FROM newsletter_subscribers ORDER BY subscribed_at DESC'
+        ).all();
+
+        return jsonResponse({ subscribers: results });
+      }
+
+      // DELETE /api/newsletter/:id - Rimuovi iscritto
+      if (path.match(/^\/api\/newsletter\/\d+$/) && method === 'DELETE') {
+        const id = path.split('/').pop();
+
+        await env.DB.prepare(
+          'DELETE FROM newsletter_subscribers WHERE id = ?'
+        ).bind(id).run();
+
+        return jsonResponse({ message: 'Subscriber removed successfully' });
+      }
+
       // Route non trovata
       return jsonResponse({ error: 'Not found' }, 404);
 

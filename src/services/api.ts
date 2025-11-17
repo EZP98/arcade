@@ -206,3 +206,39 @@ export async function uploadImage(file: File): Promise<{ url: string; filename: 
   const data = await response.json() as { url: string; filename: string };
   return { url: data.url, filename: data.filename };
 }
+
+// ========== NEWSLETTER ==========
+
+export interface NewsletterSubscriber {
+  id: number;
+  email: string;
+  subscribed_at: string;
+  ip_address?: string;
+  user_agent?: string;
+}
+
+export async function subscribeToNewsletter(email: string): Promise<{ message: string; email?: string; alreadySubscribed?: boolean }> {
+  const response = await fetch(`${API_BASE_URL}/api/newsletter`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+
+  if (!response.ok) throw new Error('Failed to subscribe to newsletter');
+  const data = await response.json() as { message: string; email?: string; alreadySubscribed?: boolean };
+  return data;
+}
+
+export async function getNewsletterSubscribers(): Promise<NewsletterSubscriber[]> {
+  const response = await fetch(`${API_BASE_URL}/api/newsletter`);
+  if (!response.ok) throw new Error('Failed to fetch newsletter subscribers');
+  const data = await response.json() as { subscribers: NewsletterSubscriber[] };
+  return data.subscribers;
+}
+
+export async function deleteNewsletterSubscriber(id: number): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/api/newsletter/${id}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) throw new Error('Failed to delete newsletter subscriber');
+}
