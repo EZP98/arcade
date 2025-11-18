@@ -129,7 +129,7 @@ const CollezioneDetail: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <h1 className="text-[42px] font-bold text-accent uppercase mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+            <h1 className="text-[42px] font-bold text-white uppercase mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>
               {collezione.titolo}
             </h1>
             <p className="text-white/60 text-[16px]">
