@@ -222,9 +222,9 @@ const ContentWithCollections: React.FC = () => {
       await createCritic({
         name,
         role,
-        texts: {
-          [language]: text
-        }
+        text,
+        order_index: 0,
+        is_visible: true
       });
       await loadData();
       alert('Critico aggiunto con successo!');
@@ -511,7 +511,7 @@ const ContentWithCollections: React.FC = () => {
                       </h3>
                       <p className="text-white/80 mb-4">{critic.role}</p>
                       <p className="text-white/60 italic" style={{ maxWidth: '800px' }}>
-                        {critic.review_text ? `"${critic.review_text.substring(0, 200)}..."` : 'Testo non disponibile'}
+                        {critic.text ? `"${critic.text.substring(0, 200)}..."` : 'Testo non disponibile'}
                       </p>
                       {!critic.is_visible && (
                         <span className="inline-block mt-2 px-2 py-1 bg-red-500/20 text-red-400 text-xs rounded-lg font-bold">
@@ -567,19 +567,10 @@ const ContentWithCollections: React.FC = () => {
                         <p className="text-white/80 mb-2">{exhibition.subtitle}</p>
                       )}
                       <p className="text-white/60 mb-2">
-                        📍 {exhibition.location}, {exhibition.city}
+                        📍 {exhibition.location}
                       </p>
                       <p className="text-white/60 mb-2">
-                        📅 {new Date(exhibition.start_date).toLocaleDateString('it-IT', {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric'
-                        })}
-                        {exhibition.end_date && ` - ${new Date(exhibition.end_date).toLocaleDateString('it-IT', {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric'
-                        })}`}
+                        📅 {exhibition.date}
                       </p>
                       {exhibition.description && (
                         <p className="text-white/60 italic mt-2">

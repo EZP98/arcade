@@ -13,10 +13,10 @@ const ExhibitionManagement: React.FC = () => {
     title: '',
     subtitle: '',
     location: '',
-    city: '',
-    start_date: '',
-    end_date: '',
+    date: '',
     description: '',
+    info: '',
+    website: '',
     image_url: '',
     slug: '',
     order_index: 0,
@@ -37,10 +37,10 @@ const ExhibitionManagement: React.FC = () => {
         title: exhibition.title,
         subtitle: exhibition.subtitle || '',
         location: exhibition.location,
-        city: exhibition.city,
-        start_date: exhibition.start_date.split('T')[0], // Format for date input
-        end_date: exhibition.end_date ? exhibition.end_date.split('T')[0] : '',
+        date: exhibition.date,
         description: exhibition.description,
+        info: exhibition.info || '',
+        website: exhibition.website || '',
         image_url: exhibition.image_url || '',
         slug: exhibition.slug,
         order_index: exhibition.order_index,
@@ -61,10 +61,17 @@ const ExhibitionManagement: React.FC = () => {
     setSaving(true);
     try {
       await updateExhibition(parseInt(exhibitionId), {
-        ...formData,
+        title: formData.title,
         subtitle: formData.subtitle || undefined,
-        end_date: formData.end_date || undefined,
-        image_url: formData.image_url || undefined
+        location: formData.location,
+        date: formData.date,
+        description: formData.description,
+        info: formData.info || undefined,
+        website: formData.website || undefined,
+        image_url: formData.image_url || undefined,
+        slug: formData.slug,
+        order_index: formData.order_index,
+        is_visible: formData.is_visible
       });
       alert('Mostra aggiornata con successo');
     } catch (error) {
@@ -89,16 +96,6 @@ const ExhibitionManagement: React.FC = () => {
       console.error('Error deleting exhibition:', error);
       alert('Errore nell\'eliminazione della mostra');
     }
-  };
-
-  const formatDateForDisplay = (dateStr: string) => {
-    if (!dateStr) return '';
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('it-IT', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    });
   };
 
   if (loading) {
@@ -189,7 +186,6 @@ const ExhibitionManagement: React.FC = () => {
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 className="w-full px-4 py-3 bg-background text-white border rounded-lg focus:outline-none focus:border-pink-500 transition-colors"
                 style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
-                placeholder="es. UNISONO"
                 required
               />
             </div>
@@ -205,7 +201,6 @@ const ExhibitionManagement: React.FC = () => {
                 onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
                 className="w-full px-4 py-3 bg-background text-white border rounded-lg focus:outline-none focus:border-pink-500 transition-colors"
                 style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
-                placeholder="es. Personale di Adele Lo Feudo"
               />
             </div>
 
@@ -220,53 +215,23 @@ const ExhibitionManagement: React.FC = () => {
                 onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                 className="w-full px-4 py-3 bg-background text-white border rounded-lg focus:outline-none focus:border-pink-500 transition-colors"
                 style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
-                placeholder="es. Loggia dei Lanari, Piazza Matteotti 18"
                 required
               />
             </div>
 
-            {/* Città */}
+            {/* Data */}
             <div>
               <label className="block text-white mb-2 font-bold">
-                Città *
+                Data *
               </label>
               <input
                 type="text"
-                value={formData.city}
-                onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                 className="w-full px-4 py-3 bg-background text-white border rounded-lg focus:outline-none focus:border-pink-500 transition-colors"
                 style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
-                placeholder="es. Perugia"
+                placeholder="es. 5 - 27 Ottobre 2024"
                 required
-              />
-            </div>
-
-            {/* Data Inizio */}
-            <div>
-              <label className="block text-white mb-2 font-bold">
-                Data Inizio *
-              </label>
-              <input
-                type="date"
-                value={formData.start_date}
-                onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                className="w-full px-4 py-3 bg-background text-white border rounded-lg focus:outline-none focus:border-pink-500 transition-colors"
-                style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
-                required
-              />
-            </div>
-
-            {/* Data Fine */}
-            <div>
-              <label className="block text-white mb-2 font-bold">
-                Data Fine
-              </label>
-              <input
-                type="date"
-                value={formData.end_date}
-                onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
-                className="w-full px-4 py-3 bg-background text-white border rounded-lg focus:outline-none focus:border-pink-500 transition-colors"
-                style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
               />
             </div>
 
@@ -281,7 +246,34 @@ const ExhibitionManagement: React.FC = () => {
                 rows={4}
                 className="w-full px-4 py-3 bg-background text-white border rounded-lg focus:outline-none focus:border-pink-500 transition-colors resize-none"
                 style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
-                placeholder="Descrizione della mostra..."
+              />
+            </div>
+
+            {/* Info */}
+            <div className="md:col-span-2">
+              <label className="block text-white mb-2 font-bold">
+                Info Aggiuntive
+              </label>
+              <textarea
+                value={formData.info}
+                onChange={(e) => setFormData({ ...formData, info: e.target.value })}
+                rows={3}
+                className="w-full px-4 py-3 bg-background text-white border rounded-lg focus:outline-none focus:border-pink-500 transition-colors resize-none"
+                style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
+              />
+            </div>
+
+            {/* Website */}
+            <div>
+              <label className="block text-white mb-2 font-bold">
+                Sito Web
+              </label>
+              <input
+                type="url"
+                value={formData.website}
+                onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                className="w-full px-4 py-3 bg-background text-white border rounded-lg focus:outline-none focus:border-pink-500 transition-colors"
+                style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
               />
             </div>
 
@@ -296,12 +288,8 @@ const ExhibitionManagement: React.FC = () => {
                 onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
                 className="w-full px-4 py-3 bg-background text-white border rounded-lg focus:outline-none focus:border-pink-500 transition-colors"
                 style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
-                placeholder="es. unisono-perugia-2024"
                 required
               />
-              <p className="text-white/60 text-sm mt-1">
-                URL: /mostre/{formData.slug || 'slug'}
-              </p>
             </div>
 
             {/* Ordine */}
@@ -329,32 +317,8 @@ const ExhibitionManagement: React.FC = () => {
                 onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
                 className="w-full px-4 py-3 bg-background text-white border rounded-lg focus:outline-none focus:border-pink-500 transition-colors"
                 style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
-                placeholder="/path/to/image.jpg"
               />
-              {formData.image_url && (
-                <div className="mt-4">
-                  <img
-                    src={formData.image_url}
-                    alt="Anteprima"
-                    className="h-40 object-cover rounded-lg"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = '/placeholder.jpg';
-                    }}
-                  />
-                </div>
-              )}
             </div>
-
-            {/* Preview Date */}
-            {(formData.start_date || formData.end_date) && (
-              <div className="md:col-span-2 p-4 bg-background rounded-lg border" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
-                <p className="text-white/60 text-sm mb-2">Anteprima date:</p>
-                <p className="text-white">
-                  {formatDateForDisplay(formData.start_date)}
-                  {formData.end_date && ` - ${formatDateForDisplay(formData.end_date)}`}
-                </p>
-              </div>
-            )}
           </div>
 
           {/* Buttons */}
