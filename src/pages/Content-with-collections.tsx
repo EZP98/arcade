@@ -3,7 +3,10 @@ import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import {
   getSections,
-  type Section
+  getNewsletterSubscribers,
+  deleteNewsletterSubscriber,
+  type Section,
+  type NewsletterSubscriber
 } from '../services/api';
 import {
   getCollections,
@@ -26,7 +29,7 @@ import {
 } from '../services/content-api';
 import { useLanguage } from '../i18n/LanguageContext';
 
-type TabType = 'collezioni' | 'sezioni' | 'critica' | 'biografia' | 'mostre';
+type TabType = 'collezioni' | 'sezioni' | 'newsletter' | 'critica' | 'biografia' | 'mostre';
 
 const ContentWithCollections: React.FC = () => {
   const navigate = useNavigate();
@@ -34,6 +37,7 @@ const ContentWithCollections: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('collezioni');
   const [collections, setCollections] = useState<Collection[]>([]);
   const [sections, setSections] = useState<Section[]>([]);
+  const [subscribers, setSubscribers] = useState<NewsletterSubscriber[]>([]);
   const [critics, setCritics] = useState<Critic[]>([]);
   const [exhibitions, setExhibitions] = useState<Exhibition[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -42,24 +46,9 @@ const ContentWithCollections: React.FC = () => {
 
   // Stati per biografia
   const [bioContent, setBioContent] = useState({
-    alf: {
-      it: {
-        paragraphs: ['', '', '', '']
-      },
-      en: {
-        paragraphs: ['', '', '', '']
-      }
-    },
-    studio: {
-      it: {
-        paragraphs: ['', '', '', '']
-      },
-      en: {
-        paragraphs: ['', '', '', '']
-      }
-    }
+    it: '',
+    en: ''
   });
-  const [bioView, setBioView] = useState<'alf' | 'studio'>('alf');
 
   // Carica i dati all'avvio
   useEffect(() => {
@@ -73,9 +62,13 @@ const ContentWithCollections: React.FC = () => {
       if (activeTab === 'collezioni') {
         const collectionsData = await getCollections();
         setCollections(collectionsData);
-      } else if (activeTab === 'sezioni') {
-        const sectionsData = await getSections();
+      } else if (activeTab === 'sezioni' || activeTab === 'newsletter') {
+        const [sectionsData, subscribersData] = await Promise.all([
+          getSections(),
+          getNewsletterSubscribers()
+        ]);
         setSections(sectionsData);
+        setSubscribers(subscribersData);
       } else if (activeTab === 'critica') {
         const criticsData = await getCritics(language);
         setCritics(criticsData);
@@ -84,49 +77,9 @@ const ContentWithCollections: React.FC = () => {
         setExhibitions(exhibitionsData);
       } else if (activeTab === 'biografia') {
         // Carica contenuti biografia dal database o localStorage
-        const savedBio = localStorage.getItem('artist-bio-enhanced');
+        const savedBio = localStorage.getItem('artist-bio');
         if (savedBio) {
           setBioContent(JSON.parse(savedBio));
-        } else {
-          // Dati di default per la biografia
-          setBioContent({
-            alf: {
-              it: {
-                paragraphs: [
-                  'Adele Lo Feudo è un\'artista italiana che ha dedicato la sua vita alla ricerca espressiva attraverso la materia pittorica. Il suo percorso artistico inizia negli anni della formazione accademica, dove sviluppa una tecnica personale che unisce tradizione e innovazione.',
-                  'La sua arte si caratterizza per l\'intensità emotiva e la forza comunicativa, elementi che emergono attraverso l\'uso sapiente del colore e della texture. Ogni opera è un viaggio nell\'anima umana, un\'esplorazione delle emozioni più profonde.',
-                  'Nel corso degli anni, Adele ha esposto in numerose mostre personali e collettive, ottenendo riconoscimenti dalla critica e dal pubblico. Il suo lavoro è presente in collezioni private e pubbliche in Italia e all\'estero.',
-                  'L\'artista continua la sua ricerca con passione e dedizione, sempre alla ricerca di nuovi linguaggi espressivi per comunicare la complessità dell\'esistenza umana attraverso l\'arte.'
-                ]
-              },
-              en: {
-                paragraphs: [
-                  'Adele Lo Feudo is an Italian artist who has dedicated her life to expressive research through pictorial matter. Her artistic journey begins during her academic training years, where she develops a personal technique that combines tradition and innovation.',
-                  'Her art is characterized by emotional intensity and communicative power, elements that emerge through the skillful use of color and texture. Each work is a journey into the human soul, an exploration of the deepest emotions.',
-                  'Over the years, Adele has exhibited in numerous solo and group exhibitions, receiving recognition from critics and the public. Her work is present in private and public collections in Italy and abroad.',
-                  'The artist continues her research with passion and dedication, always looking for new expressive languages to communicate the complexity of human existence through art.'
-                ]
-              }
-            },
-            studio: {
-              it: {
-                paragraphs: [
-                  'Lo studio di Adele Lo Feudo è un laboratorio creativo dove l\'arte prende forma attraverso un processo di ricerca continua. Situato nel cuore della città, lo spazio si configura come un ambiente di sperimentazione dove tecniche tradizionali e approcci contemporanei si fondono per dare vita a opere uniche.',
-                  'Ogni progetto nasce da un\'attenta analisi del contesto e da un dialogo costante con il committente, garantendo risultati che non solo soddisfano le aspettative estetiche, ma che raccontano anche una storia, evocano emozioni e creano connessioni profonde con lo spazio circostante.',
-                  'Lo studio offre servizi di consulenza artistica, progettazione di opere su commissione, restauro conservativo e workshop formativi. La filosofia che guida ogni intervento è quella di creare non solo oggetti d\'arte, ma esperienze che arricchiscono l\'ambiente e la vita di chi le vive quotidianamente.',
-                  'Con oltre vent\'anni di esperienza nel settore, lo studio ha realizzato progetti per collezioni private, spazi pubblici e istituzioni culturali, sempre mantenendo un approccio artigianale e una cura meticolosa per ogni dettaglio.'
-                ]
-              },
-              en: {
-                paragraphs: [
-                  'Adele Lo Feudo\'s studio is a creative laboratory where art takes shape through a process of continuous research. Located in the heart of the city, the space is configured as an experimentation environment where traditional techniques and contemporary approaches merge to create unique works.',
-                  'Each project originates from a careful analysis of the context and constant dialogue with the client, ensuring results that not only meet aesthetic expectations but also tell a story, evoke emotions, and create deep connections with the surrounding space.',
-                  'The studio offers artistic consultancy services, commissioned work design, conservative restoration, and educational workshops. The philosophy guiding each intervention is to create not just art objects, but experiences that enrich the environment and the lives of those who experience them daily.',
-                  'With over twenty years of experience in the sector, the studio has realized projects for private collections, public spaces, and cultural institutions, always maintaining an artisanal approach and meticulous care for every detail.'
-                ]
-              }
-            }
-          });
         }
       }
     } catch (error) {
@@ -317,18 +270,22 @@ const ContentWithCollections: React.FC = () => {
     }
   };
 
+  const handleDeleteSubscriber = async (id: number) => {
+    if (confirm('Sei sicuro di voler eliminare questo iscritto?')) {
+      try {
+        await deleteNewsletterSubscriber(id);
+        await loadData();
+      } catch (error) {
+        console.error('Error deleting subscriber:', error);
+        alert('Errore durante l\'eliminazione dell\'iscritto');
+      }
+    }
+  };
 
   // Handler per biografia
   const handleSaveBio = () => {
-    localStorage.setItem('artist-bio-enhanced', JSON.stringify(bioContent));
+    localStorage.setItem('artist-bio', JSON.stringify(bioContent));
     alert('Biografia salvata con successo!');
-  };
-
-  // Handler per aggiornare i paragrafi della biografia
-  const updateBioParagraph = (section: 'alf' | 'studio', lang: 'it' | 'en', index: number, value: string) => {
-    const newContent = { ...bioContent };
-    newContent[section][lang].paragraphs[index] = value;
-    setBioContent(newContent);
   };
 
   return (
@@ -343,6 +300,7 @@ const ContentWithCollections: React.FC = () => {
             Gestione <span style={{ color: 'rgb(240, 45, 110)' }}>
               {activeTab === 'collezioni' ? 'Collezioni' :
                activeTab === 'sezioni' ? 'Sezioni' :
+               activeTab === 'newsletter' ? 'Newsletter' :
                activeTab === 'critica' ? 'Critica' :
                activeTab === 'mostre' ? 'Mostre' :
                'Biografia'}
@@ -362,7 +320,7 @@ const ContentWithCollections: React.FC = () => {
         {/* Tab Navigation */}
         <div className="mb-12 border-b-2" style={{ borderColor: 'rgba(240, 45, 110, 0.3)' }}>
           <div className="flex gap-8 overflow-x-auto">
-            {(['collezioni', 'sezioni', 'mostre', 'critica', 'biografia'] as TabType[]).map((tab) => (
+            {(['collezioni', 'sezioni', 'mostre', 'critica', 'biografia', 'newsletter'] as TabType[]).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -383,7 +341,7 @@ const ContentWithCollections: React.FC = () => {
         {activeTab === 'collezioni' && (
           loading ? (
             <div className="text-center py-20">
-              <p className="text-white text-xl">Caricamento...</p>
+              <p className="text-white text-xl" style={{ fontFamily: 'Palanquin, Helvetica Neue, sans-serif' }}>Caricamento...</p>
             </div>
           ) : collections.length === 0 ? (
             <div className="p-8 border text-center" style={{ borderColor: 'rgba(255, 255, 255, 0.2)' }}>
@@ -495,7 +453,7 @@ const ContentWithCollections: React.FC = () => {
         {activeTab === 'critica' && (
           loading ? (
             <div className="text-center py-20">
-              <p className="text-white text-xl">Caricamento...</p>
+              <p className="text-white text-xl" style={{ fontFamily: 'Palanquin, Helvetica Neue, sans-serif' }}>Caricamento...</p>
             </div>
           ) : critics.length === 0 ? (
             <div className="p-8 border text-center" style={{ borderColor: 'rgba(255, 255, 255, 0.2)' }}>
@@ -599,92 +557,44 @@ const ContentWithCollections: React.FC = () => {
         )}
 
         {activeTab === 'biografia' && (
-          <div className="max-w-5xl mx-auto">
+          <div className="space-y-6">
             <div className="bg-secondary p-8 border-2" style={{ borderColor: 'rgba(240, 45, 110, 0.3)' }}>
-              <h3 className="text-2xl font-bold text-white mb-6 text-center" style={{ fontFamily: 'Palanquin, Helvetica Neue, sans-serif' }}>
-                Gestione <span style={{ color: 'rgb(240, 45, 110)' }}>Biografia</span>
+              <h3 className="text-2xl font-bold mb-6" style={{ color: 'rgb(240, 45, 110)' }}>
+                Biografia dell'Artista
               </h3>
 
-              {/* Toggle ALF / Studio */}
-              <div className="flex justify-center mb-8">
-                <div className="inline-flex gap-2 p-1 bg-black/30 rounded-full">
-                  <button
-                    onClick={() => setBioView('alf')}
-                    className={`px-6 py-2 rounded-full transition-all font-bold uppercase text-sm ${
-                      bioView === 'alf'
-                        ? 'bg-accent text-white'
-                        : 'text-white/60 hover:text-white'
-                    }`}
-                  >
-                    ALF
-                  </button>
-                  <button
-                    onClick={() => setBioView('studio')}
-                    className={`px-6 py-2 rounded-full transition-all font-bold uppercase text-sm ${
-                      bioView === 'studio'
-                        ? 'bg-accent text-white'
-                        : 'text-white/60 hover:text-white'
-                    }`}
-                  >
-                    Studio
-                  </button>
-                </div>
-              </div>
-
-              <div className="space-y-8">
-                {/* Sezione Italiano */}
+              <div className="space-y-6">
                 <div>
-                  <h4 className="text-xl font-bold text-white mb-4">
-                    {bioView === 'alf' ? 'Biografia ALF' : 'Descrizione Studio'} - Italiano
-                  </h4>
-                  {bioContent[bioView].it.paragraphs.map((paragraph, index) => (
-                    <div key={index}>
-                      <textarea
-                        value={paragraph}
-                        onChange={(e) => updateBioParagraph(bioView, 'it', index, e.target.value)}
-                        rows={4}
-                        className="w-full px-4 py-3 bg-background text-white border-2 mb-2"
-                        style={{ borderColor: 'rgba(240, 45, 110, 0.3)' }}
-                        placeholder={`Paragrafo ${index + 1} in italiano...`}
-                      />
-                      {index < bioContent[bioView].it.paragraphs.length - 1 && (
-                        <div className="h-px bg-white/20 my-4"></div>
-                      )}
-                    </div>
-                  ))}
+                  <label className="block text-white mb-2 font-bold">Biografia (Italiano)</label>
+                  <textarea
+                    value={bioContent.it}
+                    onChange={(e) => setBioContent({ ...bioContent, it: e.target.value })}
+                    rows={10}
+                    className="w-full px-4 py-2 bg-background text-white border-2"
+                    style={{ borderColor: 'rgba(240, 45, 110, 0.3)' }}
+                    placeholder="Inserisci la biografia in italiano..."
+                  />
                 </div>
 
-                {/* Sezione Inglese */}
-                <div className="pt-6 border-t-2" style={{ borderColor: 'rgba(240, 45, 110, 0.2)' }}>
-                  <h4 className="text-xl font-bold text-white mb-4">
-                    {bioView === 'alf' ? 'Biography ALF' : 'Studio Description'} - English
-                  </h4>
-                  {bioContent[bioView].en.paragraphs.map((paragraph, index) => (
-                    <div key={index}>
-                      <textarea
-                        value={paragraph}
-                        onChange={(e) => updateBioParagraph(bioView, 'en', index, e.target.value)}
-                        rows={4}
-                        className="w-full px-4 py-3 bg-background text-white border-2 mb-2"
-                        style={{ borderColor: 'rgba(240, 45, 110, 0.3)' }}
-                        placeholder={`Paragraph ${index + 1} in English...`}
-                      />
-                      {index < bioContent[bioView].en.paragraphs.length - 1 && (
-                        <div className="h-px bg-white/20 my-4"></div>
-                      )}
-                    </div>
-                  ))}
+                <div>
+                  <label className="block text-white mb-2 font-bold">Biography (English)</label>
+                  <textarea
+                    value={bioContent.en}
+                    onChange={(e) => setBioContent({ ...bioContent, en: e.target.value })}
+                    rows={10}
+                    className="w-full px-4 py-2 bg-background text-white border-2"
+                    style={{ borderColor: 'rgba(240, 45, 110, 0.3)' }}
+                    placeholder="Insert biography in English..."
+                  />
                 </div>
 
-                <div className="flex justify-center pt-6">
-                  <button
-                    onClick={handleSaveBio}
-                    className="px-8 py-3 font-bold uppercase text-white transition-all hover:scale-105"
-                    style={{ backgroundColor: 'rgb(240, 45, 110)', fontFamily: 'Palanquin, Helvetica Neue, sans-serif' }}
-                  >
-                    Salva Biografia
-                  </button>
-                </div>
+                <button
+                  onClick={handleSaveBio}
+                  className="px-8 py-3 font-bold uppercase text-white"
+                  style={{ backgroundColor: 'rgb(240, 45, 110)' }}
+                >
+                  Salva Biografia
+                </button>
               </div>
             </div>
           </div>
@@ -832,6 +742,65 @@ const ContentWithCollections: React.FC = () => {
           </div>
         )}
 
+        {activeTab === 'newsletter' && (
+          loading ? (
+            <div className="text-center py-20">
+              <p className="text-white text-xl" style={{ fontFamily: 'Palanquin, Helvetica Neue, sans-serif' }}>Caricamento...</p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold text-white" style={{ fontFamily: 'Palanquin, Helvetica Neue, sans-serif' }}>
+                  Totale iscritti: <span style={{ color: 'rgb(240, 45, 110)' }}>{subscribers.length}</span>
+                </h2>
+              </div>
+
+              {subscribers.length === 0 ? (
+                <div className="p-8 border text-center" style={{ borderColor: 'rgba(255, 255, 255, 0.2)' }}>
+                  <p className="text-white text-lg" style={{ fontFamily: 'Palanquin, Helvetica Neue, sans-serif' }}>
+                    Nessun iscritto alla newsletter
+                  </p>
+                </div>
+              ) : (
+                <div className="border" style={{ borderColor: 'rgba(255, 255, 255, 0.2)' }}>
+                  <table className="w-full">
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.2)' }}>
+                        <th className="text-left p-4 text-white font-bold uppercase text-sm">Email</th>
+                        <th className="text-left p-4 text-white font-bold uppercase text-sm">Data Iscrizione</th>
+                        <th className="text-right p-4 text-white font-bold uppercase text-sm">Azioni</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {subscribers.map((subscriber, index) => (
+                        <tr key={subscriber.id}>
+                          <td className="p-4 text-white">{subscriber.email}</td>
+                          <td className="p-4 text-white/60">
+                            {new Date(subscriber.subscribed_at).toLocaleDateString('it-IT', {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </td>
+                          <td className="p-4 text-right">
+                            <button
+                              onClick={() => handleDeleteSubscriber(subscriber.id)}
+                              className="px-4 py-2 font-bold uppercase text-white/60 hover:text-white transition-colors"
+                            >
+                              Elimina
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )
+        )}
       </div>
     </div>
   );
