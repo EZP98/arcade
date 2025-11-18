@@ -81,7 +81,7 @@ function AppContent() {
   useEffect(() => {
     // Usa un timeout per assicurarsi che il cambio di pagina sia completato
     const scrollToTop = () => {
-      window.scrollTo({ top: 0, behavior: 'instant' });
+      window.scrollTo(0, 0);
       document.documentElement.scrollTop = 0;
       document.body.scrollTop = 0;
 
