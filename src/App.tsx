@@ -26,7 +26,7 @@ import { LoadingProvider, useLoading } from './context/LoadingContext';
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger);
 
-// Componente LoadingScreen
+// Componente LoadingScreen - versione originale con effetto sparkle dal sito scaricato
 const LoadingScreen: React.FC = () => {
   return (
     <div
@@ -37,24 +37,52 @@ const LoadingScreen: React.FC = () => {
         <h1 className="text-8xl font-bold text-white mb-8 tracking-wider" style={{ fontFamily: 'Montserrat, sans-serif' }}>
           ALF
         </h1>
-        <div className="w-48 h-1 bg-white/20 relative overflow-hidden">
+        <div className="w-[200px] h-[3px] mx-auto bg-white/10 rounded-full overflow-visible relative">
           <div
-            className="absolute top-0 left-0 h-full bg-accent"
+            className="h-full rounded-full relative"
             style={{
-              animation: 'loadingBar 3s ease-in-out forwards'
+              background: 'linear-gradient(90deg, #B01050 0%, #D01257 25%, #F02D6E 50%, #FF6B9D 75%, #FFB3D1 100%)',
+              animation: 'loadBar 2.5s ease-out forwards',
+              boxShadow: '0 0 15px rgba(240, 45, 110, 0.8)'
             }}
-          />
+          >
+            {/* Punto scintillante alla fine della barra */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '-3px',
+                right: '-4px',
+                width: '8px',
+                height: '8px',
+                background: 'radial-gradient(circle, white 0%, rgba(255, 255, 255, 1) 30%, rgba(255, 255, 255, 0.4) 60%, transparent 100%)',
+                borderRadius: '50%',
+                filter: 'blur(0.5px)',
+                boxShadow: '0 0 12px rgba(255, 255, 255, 1), 0 0 20px rgba(255, 255, 255, 0.9), 0 0 28px rgba(240, 45, 110, 1), 0 0 36px rgba(240, 45, 110, 0.7)',
+                animation: 'sparkle 2s ease-in-out infinite'
+              }}
+            />
+          </div>
         </div>
       </div>
 
       <style>{`
-        @keyframes loadingBar {
+        @keyframes loadBar {
           from { width: 0; }
           to { width: 100%; }
         }
         @keyframes fadeOut {
           from { opacity: 1; }
           to { opacity: 0; pointer-events: none; }
+        }
+        @keyframes sparkle {
+          0%, 100% {
+            opacity: 1;
+            transform: scaleX(1);
+          }
+          50% {
+            opacity: 0.8;
+            transform: scaleX(1.5);
+          }
         }
       `}</style>
     </div>
