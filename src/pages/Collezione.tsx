@@ -1191,108 +1191,108 @@ const Collezione: React.FC = () => {
             {/* Testo Critico 1 - Angelo Leidi */}
             <TestoCriticoItem
               nome="Angelo Leidi"
-              ruolo={t('critics.angeloLeidi.role')}
-              testo={t('critics.angeloLeidi.text')}
+              ruolo={(t('critics') as any)?.angeloLeidi?.role}
+              testo={(t('critics') as any)?.angeloLeidi?.text}
               onClick={() => openCriticoModal({
                 nome: 'Angelo Leidi',
-                ruolo: t('critics.angeloLeidi.role'),
-                testo: t('critics.angeloLeidi.text')
+                ruolo: (t('critics') as any)?.angeloLeidi?.role,
+                testo: (t('critics') as any)?.angeloLeidi?.text
               })}
             />
 
             {/* Testo Critico 2 - Leonardo Varasano */}
             <TestoCriticoItem
               nome="Leonardo Varasano"
-              ruolo={t('critics.leonardoVarasano.role')}
-              testo={t('critics.leonardoVarasano.text')}
+              ruolo={(t('critics') as any)?.leonardoVarasano?.role}
+              testo={(t('critics') as any)?.leonardoVarasano?.text}
               onClick={() => openCriticoModal({
                 nome: 'Leonardo Varasano',
-                ruolo: t('critics.leonardoVarasano.role'),
-                testo: t('critics.leonardoVarasano.text')
+                ruolo: (t('critics') as any)?.leonardoVarasano?.role,
+                testo: (t('critics') as any)?.leonardoVarasano?.text
               })}
             />
 
             {/* Testo Critico 3 - Celeste Morè */}
             <TestoCriticoItem
               nome="Celeste Morè"
-              ruolo={t('critics.celesteMore.role')}
-              testo={t('critics.celesteMore.text')}
+              ruolo={(t('critics') as any)?.celesteMore?.role}
+              testo={(t('critics') as any)?.celesteMore?.text}
               onClick={() => openCriticoModal({
                 nome: 'Celeste Morè',
-                ruolo: t('critics.celesteMore.role'),
-                testo: t('critics.celesteMore.text')
+                ruolo: (t('critics') as any)?.celesteMore?.role,
+                testo: (t('critics') as any)?.celesteMore?.text
               })}
             />
 
             {/* Testo Critico 4 - Marco Botti */}
             <TestoCriticoItem
               nome="Marco Botti"
-              ruolo={t('critics.marcoBotti.role')}
-              testo={t('critics.marcoBotti.text')}
+              ruolo={(t('critics') as any)?.marcoBotti?.role}
+              testo={(t('critics') as any)?.marcoBotti?.text}
               onClick={() => openCriticoModal({
                 nome: 'Marco Botti',
-                ruolo: t('critics.marcoBotti.role'),
-                testo: t('critics.marcoBotti.text')
+                ruolo: (t('critics') as any)?.marcoBotti?.role,
+                testo: (t('critics') as any)?.marcoBotti?.text
               })}
             />
 
             {/* Testo Critico 5 - Helen Pankhurst */}
             <TestoCriticoItem
               nome="Helen Pankhurst"
-              ruolo={t('critics.helenPankhurst.role')}
-              testo={t('critics.helenPankhurst.text')}
+              ruolo={(t('critics') as any)?.helenPankhurst?.role}
+              testo={(t('critics') as any)?.helenPankhurst?.text}
               onClick={() => openCriticoModal({
                 nome: 'Helen Pankhurst',
-                ruolo: t('critics.helenPankhurst.role'),
-                testo: t('critics.helenPankhurst.text')
+                ruolo: (t('critics') as any)?.helenPankhurst?.role,
+                testo: (t('critics') as any)?.helenPankhurst?.text
               })}
             />
 
             {/* Testo Critico 6 - Alessandra Boldreghini */}
             <TestoCriticoItem
               nome="Alessandra Boldreghini"
-              ruolo={t('critics.alessandraBoldreghini.role')}
-              testo={t('critics.alessandraBoldreghini.text')}
+              ruolo={(t('critics') as any)?.alessandraBoldreghini?.role}
+              testo={(t('critics') as any)?.alessandraBoldreghini?.text}
               onClick={() => openCriticoModal({
                 nome: 'Alessandra Boldreghini',
-                ruolo: t('critics.alessandraBoldreghini.role'),
-                testo: t('critics.alessandraBoldreghini.text')
+                ruolo: (t('critics') as any)?.alessandraBoldreghini?.role,
+                testo: (t('critics') as any)?.alessandraBoldreghini?.text
               })}
             />
 
             {/* Testo Critico 7 - Donato Loscalzo */}
             <TestoCriticoItem
               nome="Donato Antonio Loscalzo"
-              ruolo={t('critics.donatoLoscalzo.role')}
-              testo={t('critics.donatoLoscalzo.text')}
+              ruolo={(t('critics') as any)?.donatoLoscalzo?.role}
+              testo={(t('critics') as any)?.donatoLoscalzo?.text}
               onClick={() => openCriticoModal({
                 nome: 'Donato Antonio Loscalzo',
-                ruolo: t('critics.donatoLoscalzo.role'),
-                testo: t('critics.donatoLoscalzo.text')
+                ruolo: (t('critics') as any)?.donatoLoscalzo?.role,
+                testo: (t('critics') as any)?.donatoLoscalzo?.text
               })}
             />
 
             {/* Testo Critico 8 - Alessandra Primicerio */}
             <TestoCriticoItem
               nome="Alessandra Primicerio"
-              ruolo={t('critics.alessandraPrimicerio.role')}
-              testo={t('critics.alessandraPrimicerio.text')}
+              ruolo={(t('critics') as any)?.alessandraPrimicerio?.role}
+              testo={(t('critics') as any)?.alessandraPrimicerio?.text}
               onClick={() => openCriticoModal({
                 nome: 'Alessandra Primicerio',
-                ruolo: t('critics.alessandraPrimicerio.role'),
-                testo: t('critics.alessandraPrimicerio.text')
+                ruolo: (t('critics') as any)?.alessandraPrimicerio?.role,
+                testo: (t('critics') as any)?.alessandraPrimicerio?.text
               })}
             />
 
             {/* Testo Critico 9 - Emidio De Albentiis */}
             <TestoCriticoItem
               nome="Emidio De Albentiis"
-              ruolo={t('critics.emidioDeAlbentiis.role')}
-              testo={t('critics.emidioDeAlbentiis.text')}
+              ruolo={(t('critics') as any)?.emidioDeAlbentiis?.role}
+              testo={(t('critics') as any)?.emidioDeAlbentiis?.text}
               onClick={() => openCriticoModal({
                 nome: 'Emidio De Albentiis',
-                ruolo: t('critics.emidioDeAlbentiis.role'),
-                testo: t('critics.emidioDeAlbentiis.text')
+                ruolo: (t('critics') as any)?.emidioDeAlbentiis?.role,
+                testo: (t('critics') as any)?.emidioDeAlbentiis?.text
               })}
             />
             </div>
