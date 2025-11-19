@@ -102,11 +102,19 @@ const CollectionManagement: React.FC = () => {
       const response = await fetch(`${API_BASE_URL}/api/media`);
       if (response.ok) {
         const data = await response.json() as { images?: Array<{ filename: string; url: string }> };
-        setAvailableImages(data.images || []);
+        // Filter out thumbnails - show only originals
+        const originals = (data.images || []).filter(img => !img.filename.includes('_thumb'));
+        setAvailableImages(originals);
       }
     } catch (error) {
       console.error('Error loading images:', error);
     }
+  };
+
+  // Get thumbnail URL from original URL
+  const getThumbnailUrl = (originalUrl: string): string => {
+    // Replace extension with _thumb.extension
+    return originalUrl.replace(/\.(jpg|jpeg|png|gif|webp)$/i, '_thumb.$1');
   };
 
   const handleFileUpload = async (file: File) => {
@@ -566,26 +574,32 @@ const CollectionManagement: React.FC = () => {
             {/* Image Picker Modal */}
             {showImagePicker && (
               <div
-                className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-6"
+                className="fixed inset-0 bg-black/80 z-50 overflow-y-auto"
                 onClick={() => setShowImagePicker(false)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => e.preventDefault()}
               >
-                <div
-                  className="bg-secondary rounded-xl p-8 max-w-4xl w-full max-h-[80vh] overflow-y-auto border"
-                  style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-2xl font-bold text-white">Seleziona Immagine</h3>
-                    <button
-                      onClick={() => setShowImagePicker(false)}
-                      className="text-white/60 hover:text-white text-3xl"
-                    >
-                      ×
-                    </button>
-                  </div>
-
-                  {/* Drag & Drop Upload Zone */}
+                <div className="min-h-screen flex items-center justify-center p-6">
                   <div
+                    className="bg-secondary rounded-xl max-w-4xl w-full border my-8"
+                    style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {/* Header */}
+                    <div className="flex justify-between items-center p-8 pb-4">
+                      <h3 className="text-2xl font-bold text-white">Seleziona Immagine</h3>
+                      <button
+                        onClick={() => setShowImagePicker(false)}
+                        className="text-white/60 hover:text-white text-3xl"
+                      >
+                        ×
+                      </button>
+                    </div>
+
+                    {/* Content */}
+                    <div className="px-8 pb-8">
+                    {/* Drag & Drop Upload Zone */}
+                    <div
                     className={`mb-6 border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
                       isDragging
                         ? 'border-accent bg-accent/10'
@@ -651,13 +665,14 @@ const CollectionManagement: React.FC = () => {
                           key={image.filename}
                           className="cursor-pointer group"
                           onClick={() => {
+                            // Set the ORIGINAL high-quality image URL
                             setFormData({ ...formData, image_url: image.url });
                             setShowImagePicker(false);
                           }}
                         >
                           <div className="aspect-video bg-background rounded-lg overflow-hidden border-2 border-transparent group-hover:border-accent transition-colors">
                             <img
-                              src={getImageUrl(image.url)}
+                              src={getImageUrl(getThumbnailUrl(image.url))}
                               alt={image.filename}
                               className="w-full h-full object-cover"
                             />
@@ -667,6 +682,8 @@ const CollectionManagement: React.FC = () => {
                       ))}
                     </div>
                   )}
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
