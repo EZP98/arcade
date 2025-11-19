@@ -38,6 +38,7 @@ const MediaStorage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [viewingImage, setViewingImage] = useState<MediaImage | null>(null);
   const [regenerating, setRegenerating] = useState(false);
+  const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
 
   const loadImages = useCallback(async () => {
     try {
@@ -555,8 +556,7 @@ const MediaStorage: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-secondary p-8 rounded-xl border"
-          style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
+          className="bg-secondary"
         >
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-white uppercase" style={{ fontFamily: 'Montserrat, sans-serif' }}>
@@ -610,22 +610,31 @@ const MediaStorage: React.FC = () => {
                   return (
                 <div
                   key={image.filename}
-                  className="bg-background overflow-hidden"
+                  className="bg-background rounded-lg overflow-hidden border border-white/10 hover:border-white/20 transition-all"
                 >
                   {/* Image Preview */}
                   <div
-                    className="aspect-video bg-black/20 flex items-center justify-center overflow-hidden cursor-pointer"
+                    className="aspect-video bg-black/20 flex items-center justify-center overflow-hidden cursor-pointer relative"
                     onClick={() => setViewingImage(image)}
                   >
+                    {/* Placeholder */}
+                    {!loadedImages.has(image.filename) && (
+                      <div className="absolute inset-0 bg-white/5 animate-pulse" />
+                    )}
                     <img
                       src={`${API_BASE_URL}${displayUrl}`}
                       alt={image.filename}
-                      className="w-full h-full object-cover"
+                      className={`w-full h-full object-cover transition-opacity duration-300 ${
+                        loadedImages.has(image.filename) ? 'opacity-100' : 'opacity-0'
+                      }`}
+                      onLoad={() => {
+                        setLoadedImages(prev => new Set(prev).add(image.filename));
+                      }}
                     />
                   </div>
 
                   {/* Image Info */}
-                  <div className="space-y-3">
+                  <div className="p-4 space-y-3">
                     <div>
                       <p className="text-white text-sm font-bold truncate" title={image.filename}>
                         {image.filename}
