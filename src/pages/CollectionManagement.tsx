@@ -75,10 +75,25 @@ const CollectionManagement: React.FC = () => {
   });
   const [editingArtworkId, setEditingArtworkId] = useState<number | null>(null);
   const [showAddArtwork, setShowAddArtwork] = useState(false);
+  const [showImagePicker, setShowImagePicker] = useState(false);
+  const [availableImages, setAvailableImages] = useState<Array<{ filename: string; url: string }>>([]);
 
   useEffect(() => {
     loadData();
+    loadImages();
   }, [collectionId]);
+
+  const loadImages = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/media`);
+      if (response.ok) {
+        const data = await response.json();
+        setAvailableImages(data.images || []);
+      }
+    } catch (error) {
+      console.error('Error loading images:', error);
+    }
+  };
 
   // Check if there are changes
   const hasChanges = React.useMemo(() => {
@@ -374,86 +389,156 @@ const CollectionManagement: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-secondary p-8 rounded-xl border"
-            style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
+            className="space-y-6"
           >
-            <h2 className="text-2xl font-bold text-white mb-6">Informazioni Collezione</h2>
+            {/* Informazioni Collezione */}
+            <div className="bg-secondary p-8 rounded-xl border" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+              <h2 className="text-2xl font-bold text-white mb-6">Informazioni Collezione</h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-white mb-2 font-bold">Titolo</label>
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-4 py-2 bg-background text-white border rounded-lg"
-                  style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
-                />
-              </div>
-
-              <div>
-                <label className="block text-white mb-2 font-bold">Slug (URL)</label>
-                <input
-                  type="text"
-                  value={formData.slug}
-                  readOnly
-                  className="w-full px-4 py-2 bg-background/50 text-white/70 border rounded-lg cursor-not-allowed"
-                  style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
-                />
-                <p className="text-white/60 text-sm mt-1">⚠️ Non modificabile | URL: /collezione/{formData.slug}</p>
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-white mb-2 font-bold">Descrizione</label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  rows={4}
-                  className="w-full px-4 py-2 bg-background text-white border rounded-lg"
-                  style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
-                />
-              </div>
-
-              <div>
-                <label className="block text-white mb-2 font-bold">Immagine Copertina</label>
-                <input
-                  type="text"
-                  value={formData.image_url}
-                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                  className="w-full px-4 py-2 bg-background text-white border rounded-lg"
-                  style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
-                  placeholder="/DSCF9079.jpg"
-                />
-              </div>
-
-              <div>
-                <label className="block text-white mb-2 font-bold">Ordine di visualizzazione</label>
-                <input
-                  type="number"
-                  min="1"
-                  value={formData.order_index}
-                  onChange={(e) => setFormData({ ...formData, order_index: parseInt(e.target.value) || 1 })}
-                  className="w-full px-4 py-2 bg-background text-white border rounded-lg"
-                  style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
-                />
-                <p className="text-white/60 text-sm mt-1">
-                  1 = prima posizione. Se usi numeri uguali o salti (es. 1, 5, 12), l'ordine sarà comunque corretto.
-                </p>
-              </div>
-
-              {formData.image_url && (
-                <div className="md:col-span-2">
-                  <label className="block text-white mb-2 font-bold">Anteprima Immagine</label>
-                  <img
-                    src={getImageUrl(formData.image_url)}
-                    alt="Anteprima"
-                    className="w-64 h-40 object-cover rounded-lg border"
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-white mb-2 font-bold">Titolo</label>
+                  <input
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    className="w-full px-4 py-2 bg-background text-white border rounded-lg"
                     style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
                   />
                 </div>
-              )}
+
+                <div>
+                  <label className="block text-white mb-2 font-bold">Slug (URL)</label>
+                  <input
+                    type="text"
+                    value={formData.slug}
+                    readOnly
+                    className="w-full px-4 py-2 bg-background/50 text-white/70 border rounded-lg cursor-not-allowed"
+                    style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
+                  />
+                  <p className="text-white/60 text-sm mt-1">⚠️ Non modificabile | URL: /collezione/{formData.slug}</p>
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-white mb-2 font-bold">Descrizione</label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    rows={4}
+                    className="w-full px-4 py-2 bg-background text-white border rounded-lg"
+                    style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white mb-2 font-bold">Ordine di visualizzazione</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={formData.order_index}
+                    onChange={(e) => setFormData({ ...formData, order_index: parseInt(e.target.value) || 1 })}
+                    className="w-full px-4 py-2 bg-background text-white border rounded-lg"
+                    style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
+                  />
+                  <p className="text-white/60 text-sm mt-1">
+                    1 = prima posizione. Se usi numeri uguali o salti (es. 1, 5, 12), l'ordine sarà comunque corretto.
+                  </p>
+                </div>
+              </div>
             </div>
 
+            {/* Immagine Collezione */}
+            <div className="bg-secondary p-8 rounded-xl border" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+              <h2 className="text-2xl font-bold text-white mb-6">Immagine Collezione</h2>
+
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-white mb-2 font-bold">Immagine Copertina</label>
+                  <div className="flex gap-4">
+                    <input
+                      type="text"
+                      value={formData.image_url}
+                      onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                      className="flex-1 px-4 py-2 bg-background text-white border rounded-lg"
+                      style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
+                      placeholder="/images/foto.jpg"
+                    />
+                    <button
+                      onClick={() => setShowImagePicker(true)}
+                      className="px-6 py-2 font-bold uppercase text-white rounded-lg transition-opacity hover:opacity-90"
+                      style={{ backgroundColor: 'rgb(240, 45, 110)' }}
+                    >
+                      Scegli da Storage
+                    </button>
+                  </div>
+                </div>
+
+                {formData.image_url && (
+                  <div>
+                    <label className="block text-white mb-2 font-bold">Anteprima Immagine</label>
+                    <img
+                      src={getImageUrl(formData.image_url)}
+                      alt="Anteprima"
+                      className="w-64 h-40 object-cover rounded-lg border"
+                      style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
+                      onError={(e) => {
+                        e.currentTarget.src = '/placeholder.jpg';
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Image Picker Modal */}
+            {showImagePicker && (
+              <div
+                className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-6"
+                onClick={() => setShowImagePicker(false)}
+              >
+                <div
+                  className="bg-secondary rounded-xl p-8 max-w-4xl w-full max-h-[80vh] overflow-y-auto border"
+                  style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-2xl font-bold text-white">Seleziona Immagine</h3>
+                    <button
+                      onClick={() => setShowImagePicker(false)}
+                      className="text-white/60 hover:text-white text-3xl"
+                    >
+                      ×
+                    </button>
+                  </div>
+
+                  {availableImages.length === 0 ? (
+                    <p className="text-white/60 text-center py-8">Nessuna immagine disponibile nello storage</p>
+                  ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {availableImages.map((image) => (
+                        <div
+                          key={image.filename}
+                          className="cursor-pointer group"
+                          onClick={() => {
+                            setFormData({ ...formData, image_url: image.url });
+                            setShowImagePicker(false);
+                          }}
+                        >
+                          <div className="aspect-video bg-background rounded-lg overflow-hidden border-2 border-transparent group-hover:border-accent transition-colors">
+                            <img
+                              src={getImageUrl(image.url)}
+                              alt={image.filename}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <p className="text-white/60 text-sm mt-2 truncate">{image.filename}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </motion.div>
         )}
 
