@@ -21,7 +21,7 @@ const getImageUrl = (path: string): string => {
 
 const NewCollection: React.FC = () => {
   const navigate = useNavigate();
-  const { showError } = useToast();
+  const { showError, showSuccess } = useToast();
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -51,11 +51,17 @@ const NewCollection: React.FC = () => {
         is_visible: formData.is_visible
       });
 
-      // Naviga alla pagina di gestione della nuova collezione
-      navigate(`/content/collezione/${newCollection.id}`);
+      // Mostra messaggio di successo
+      showSuccess('Collezione creata con successo!');
+
+      // Naviga alla pagina di gestione della nuova collezione dopo un breve delay
+      setTimeout(() => {
+        navigate(`/content/collezione/${newCollection.id}`);
+      }, 1000);
     } catch (error) {
       console.error('Error creating collection:', error);
-      showError('Errore nella creazione della collezione');
+      const errorMessage = error instanceof Error ? error.message : 'Errore nella creazione della collezione';
+      showError(errorMessage);
       setSaving(false);
     }
   };
