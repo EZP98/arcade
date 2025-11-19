@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import BackofficeLayout from '../components/BackofficeLayout';
 import { getCollections, updateCollection, Collection, Artwork, getCollectionArtworks } from '../services/collections-api';
+import { useToast } from '../components/Toast';
 
 const API_BASE_URL = import.meta.env.PROD
   ? 'https://alf-portfolio-api.eziopappalardo98.workers.dev'
@@ -37,6 +38,7 @@ const getImageUrl = (path: string): string => {
 const CollectionManagement: React.FC = () => {
   const { collectionId } = useParams<{ collectionId: string }>();
   const navigate = useNavigate();
+  const { showSuccess, showError } = useToast();
   const [collection, setCollection] = useState<Collection | null>(null);
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [loading, setLoading] = useState(true);
@@ -105,11 +107,11 @@ const CollectionManagement: React.FC = () => {
     setSaving(true);
     try {
       await updateCollection(collection.id, formData);
-      alert('Collezione aggiornata con successo!');
+      showSuccess('Collezione aggiornata con successo!');
       loadData();
     } catch (error) {
       console.error('Error updating collection:', error);
-      alert('Errore nell\'aggiornamento della collezione');
+      showError('Errore nell\'aggiornamento della collezione');
     } finally {
       setSaving(false);
     }
