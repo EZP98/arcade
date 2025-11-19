@@ -55,6 +55,16 @@ const CollectionManagement: React.FC = () => {
     is_visible: true
   });
 
+  // Original data to track changes
+  const [originalData, setOriginalData] = useState({
+    title: '',
+    slug: '',
+    description: '',
+    image_url: '',
+    order_index: 1,
+    is_visible: true
+  });
+
   // Form data for artwork
   const [artworkFormData, setArtworkFormData] = useState({
     title: '',
@@ -70,6 +80,16 @@ const CollectionManagement: React.FC = () => {
     loadData();
   }, [collectionId]);
 
+  // Check if there are changes
+  const hasChanges = React.useMemo(() => {
+    return formData.title !== originalData.title ||
+      formData.slug !== originalData.slug ||
+      formData.description !== originalData.description ||
+      formData.image_url !== originalData.image_url ||
+      formData.order_index !== originalData.order_index ||
+      formData.is_visible !== originalData.is_visible;
+  }, [formData, originalData]);
+
   const loadData = async () => {
     if (!collectionId) return;
 
@@ -81,14 +101,16 @@ const CollectionManagement: React.FC = () => {
 
       if (collectionData) {
         setCollection(collectionData);
-        setFormData({
+        const data = {
           title: collectionData.title,
           slug: collectionData.slug,
           description: collectionData.description,
           image_url: collectionData.image_url,
           order_index: collectionData.order_index,
           is_visible: collectionData.is_visible
-        });
+        };
+        setFormData(data);
+        setOriginalData(data);
 
         // Get artworks
         const artworksData = await getCollectionArtworks(parseInt(collectionId));
@@ -649,8 +671,8 @@ const CollectionManagement: React.FC = () => {
           </motion.div>
         )}
 
-        {/* Floating Buttons - Only show in Info tab */}
-        {activeTab === 'info' && (
+        {/* Floating Buttons - Only show in Info tab when there are changes */}
+        {activeTab === 'info' && hasChanges && (
           <div className="fixed bottom-6 right-6 flex gap-3 z-50">
             <button
               onClick={() => navigate(-1)}
