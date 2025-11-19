@@ -647,7 +647,7 @@ const MediaStorage: React.FC = () => {
                     {/* URL Display - Click to copy */}
                     <button
                       onClick={() => copyToClipboard(image.url)}
-                      className="w-full px-3 py-2 bg-black/20 text-white/80 text-xs border border-white/10 hover:border-white/20 hover:bg-white/5 transition-all cursor-pointer text-left truncate"
+                      className="max-w-sm px-3 py-2 bg-black/20 text-white/80 text-xs border border-white/10 hover:border-white/20 hover:bg-white/5 transition-all cursor-pointer text-left truncate"
                       style={{ borderRadius: 0 }}
                       title={copiedUrl === image.url ? "Copiato!" : "Clicca per copiare URL"}
                     >
