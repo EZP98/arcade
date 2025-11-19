@@ -586,14 +586,13 @@ const CollectionManagement: React.FC = () => {
                   onDrop={(e) => e.preventDefault()}
                 />
 
-                {/* Scrollable container */}
-                <div className="fixed inset-0 overflow-y-auto">
-                  <div className="flex min-h-full items-center justify-center p-4">
-                    <div
-                      className="relative bg-secondary rounded-xl max-w-4xl w-full border my-8 max-h-[calc(100vh-2rem)] flex flex-col"
-                      style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
-                      onClick={(e) => e.stopPropagation()}
-                    >
+                {/* Container */}
+                <div className="fixed inset-0 flex items-center justify-center p-4">
+                  <div
+                    className="relative bg-secondary rounded-xl max-w-4xl w-full border max-h-[90vh] flex flex-col"
+                    style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
                       {/* Header */}
                       <div className="p-8 pb-4 flex-shrink-0">
                         <button
@@ -693,7 +692,6 @@ const CollectionManagement: React.FC = () => {
                         ))}
                       </div>
                     )}
-                      </div>
                     </div>
                   </div>
                 </div>
