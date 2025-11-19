@@ -185,15 +185,15 @@ const NewCollection: React.FC = () => {
               </label>
               <input
                 type="number"
-                min="0"
+                min="1"
                 value={formData.order_index}
-                onChange={(e) => setFormData({ ...formData, order_index: parseInt(e.target.value) || 0 })}
+                onChange={(e) => setFormData({ ...formData, order_index: parseInt(e.target.value) || 1 })}
                 className="w-full px-4 py-3 bg-background text-white border rounded-lg focus:outline-none focus:border-pink-500 transition-colors"
                 style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
                 placeholder="1"
               />
               <p className="text-white/60 text-sm mt-1">
-                Numero più basso = mostra prima
+                1 = prima posizione. Se usi numeri uguali o salti (es. 1, 5, 12), l'ordine sarà comunque corretto.
               </p>
             </div>
 
