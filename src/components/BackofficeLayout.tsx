@@ -138,6 +138,7 @@ const BackofficeLayout: React.FC<BackofficeLayoutProps> = ({ children }) => {
                   fontFamily: 'Montserrat, sans-serif',
                   letterSpacing: '0.05em'
                 }}
+                aria-label={item.label}
               >
                 <span style={{ flexShrink: 0, width: '20px', height: '20px', display: 'inline-flex' }}>
                   {item.icon}
@@ -166,6 +167,7 @@ const BackofficeLayout: React.FC<BackofficeLayoutProps> = ({ children }) => {
             className="w-full flex items-center justify-center border rounded-lg transition-all hover:bg-white/5 font-bold uppercase text-xs tracking-wide text-white/50 hover:text-white/80 px-3 py-3"
             style={{ borderColor: 'rgba(255, 255, 255, 0.1)', fontFamily: 'Montserrat, sans-serif' }}
             title="Torna al Sito"
+            aria-label="Torna al Sito"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
