@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import BackofficeLayout from '../components/BackofficeLayout';
 import { createCollection } from '../services/collections-api';
+import { useToast } from '../components/Toast';
 
 const API_BASE_URL = import.meta.env.PROD
   ? 'https://alf-portfolio-api.eziopappalardo98.workers.dev'
@@ -20,6 +21,7 @@ const getImageUrl = (path: string): string => {
 
 const NewCollection: React.FC = () => {
   const navigate = useNavigate();
+  const { showError } = useToast();
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -34,7 +36,7 @@ const NewCollection: React.FC = () => {
     e.preventDefault();
 
     if (!formData.title || !formData.slug) {
-      alert('Titolo e Slug sono obbligatori');
+      showError('Titolo e Slug sono obbligatori');
       return;
     }
 
@@ -53,7 +55,7 @@ const NewCollection: React.FC = () => {
       navigate(`/content/collezione/${newCollection.id}`);
     } catch (error) {
       console.error('Error creating collection:', error);
-      alert('Errore nella creazione della collezione');
+      showError('Errore nella creazione della collezione');
       setSaving(false);
     }
   };
