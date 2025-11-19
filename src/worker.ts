@@ -6,13 +6,14 @@
 interface Env {
   DB: D1Database;
   IMAGES?: R2Bucket;
+  API_KEY: string; // Secret API key for authentication
 }
 
 // Funzioni helper per CORS
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Cache-Control, Pragma',
+  'Access-Control-Allow-Headers': 'Content-Type, Cache-Control, Pragma, Authorization',
 };
 
 function jsonResponse(data: any, status = 200) {
@@ -25,6 +26,23 @@ function jsonResponse(data: any, status = 200) {
   });
 }
 
+// Authentication helper
+function isAuthenticated(request: Request, env: Env): boolean {
+  const authHeader = request.headers.get('Authorization');
+  if (!authHeader) return false;
+
+  // Support both "Bearer TOKEN" and "TOKEN" formats
+  const token = authHeader.startsWith('Bearer ')
+    ? authHeader.substring(7)
+    : authHeader;
+
+  return token === env.API_KEY;
+}
+
+function unauthorizedResponse() {
+  return jsonResponse({ error: 'Unauthorized - Invalid or missing API key' }, 401);
+}
+
 // Router principale
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -35,6 +53,12 @@ export default {
     // Handle CORS preflight
     if (method === 'OPTIONS') {
       return new Response(null, { headers: corsHeaders });
+    }
+
+    // Authentication check for write operations
+    const writeOperations = ['POST', 'PUT', 'DELETE'];
+    if (writeOperations.includes(method) && !isAuthenticated(request, env)) {
+      return unauthorizedResponse();
     }
 
     try {
@@ -792,12 +816,15 @@ export default {
         }
 
         const listed = await env.IMAGES.list();
-        const images = listed.objects.map(obj => ({
-          filename: obj.key,
-          url: `/images/${obj.key}`,
-          size: obj.size,
-          uploaded: obj.uploaded.toISOString()
-        }));
+        const images = listed.objects
+          .map(obj => ({
+            filename: obj.key,
+            url: `/images/${obj.key}`,
+            size: obj.size,
+            uploaded: obj.uploaded.toISOString()
+          }))
+          // Ordina per data di upload: dalla più recente alla meno recente
+          .sort((a, b) => new Date(b.uploaded).getTime() - new Date(a.uploaded).getTime());
 
         return jsonResponse({ images });
       }
@@ -889,6 +916,59 @@ export default {
             'Cache-Control': 'public, max-age=31536000',
             ...corsHeaders,
           },
+        });
+      }
+
+      // GET /api/images/:filename/usage - Controlla dove è usata l'immagine
+      if (path.match(/^\/api\/images\/.+\/usage$/) && method === 'GET') {
+        const filename = path.split('/')[3];
+        const imageUrl = `/images/${filename}`;
+
+        // Controlla in artworks
+        const artworksUsage = await env.DB.prepare(
+          'SELECT id, title FROM artworks WHERE image_url = ?'
+        ).bind(imageUrl).all();
+
+        // Controlla in collections
+        const collectionsUsage = await env.DB.prepare(
+          'SELECT id, title FROM collections WHERE image_url = ?'
+        ).bind(imageUrl).all();
+
+        // Controlla in exhibitions
+        const exhibitionsUsage = await env.DB.prepare(
+          'SELECT id, title FROM exhibitions WHERE image_url = ?'
+        ).bind(imageUrl).all();
+
+        const usage = {
+          artworks: artworksUsage.results || [],
+          collections: collectionsUsage.results || [],
+          exhibitions: exhibitionsUsage.results || [],
+          total: (artworksUsage.results?.length || 0) +
+                 (collectionsUsage.results?.length || 0) +
+                 (exhibitionsUsage.results?.length || 0)
+        };
+
+        return jsonResponse({ usage });
+      }
+
+      // DELETE /api/images/:filename - Elimina immagine da R2
+      if (path.match(/^\/api\/images\/[^/]+$/) && method === 'DELETE') {
+        if (!env.IMAGES) {
+          return jsonResponse({ error: 'R2 storage not configured' }, 503);
+        }
+
+        const filename = path.split('/')[3];
+
+        // Elimina l'originale
+        await env.IMAGES.delete(filename);
+
+        // Elimina il thumbnail se esiste
+        const thumbFilename = filename.replace(/\.(jpg|jpeg|png|gif|webp)$/i, '_thumb.$1');
+        await env.IMAGES.delete(thumbFilename);
+
+        return jsonResponse({
+          message: 'Image deleted successfully',
+          filename
         });
       }
 

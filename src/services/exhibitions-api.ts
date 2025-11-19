@@ -6,6 +6,20 @@
 const API_BASE_URL = import.meta.env.PROD
   ? 'https://alf-portfolio-api.eziopappalardo98.workers.dev'
   : 'http://localhost:8787';
+const API_KEY = import.meta.env.VITE_API_KEY || '';
+
+// Helper to add authentication headers
+function getAuthHeaders(): HeadersInit {
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+
+  if (API_KEY) {
+    headers['Authorization'] = `Bearer ${API_KEY}`;
+  }
+
+  return headers;
+}
 
 export interface Exhibition {
   id: number;
@@ -49,7 +63,7 @@ export async function getExhibition(id: number): Promise<Exhibition> {
 export async function createExhibition(exhibition: Omit<Exhibition, 'id' | 'created_at' | 'updated_at'>): Promise<Exhibition> {
   const response = await fetch(`${API_BASE_URL}/api/exhibitions`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders(),
     body: JSON.stringify(exhibition),
   });
   if (!response.ok) throw new Error('Failed to create exhibition');
@@ -60,7 +74,7 @@ export async function createExhibition(exhibition: Omit<Exhibition, 'id' | 'crea
 export async function updateExhibition(id: number, updates: Partial<Exhibition>): Promise<Exhibition> {
   const response = await fetch(`${API_BASE_URL}/api/exhibitions/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders(),
     body: JSON.stringify(updates),
   });
   if (!response.ok) throw new Error('Failed to update exhibition');
@@ -71,6 +85,7 @@ export async function updateExhibition(id: number, updates: Partial<Exhibition>)
 export async function deleteExhibition(id: number): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/api/exhibitions/${id}`, {
     method: 'DELETE',
+    headers: getAuthHeaders(),
   });
   if (!response.ok) throw new Error('Failed to delete exhibition');
 }

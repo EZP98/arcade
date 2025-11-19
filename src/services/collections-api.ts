@@ -6,6 +6,20 @@
 const API_BASE_URL = import.meta.env.PROD
   ? 'https://alf-portfolio-api.eziopappalardo98.workers.dev'
   : 'http://localhost:8787';
+const API_KEY = import.meta.env.VITE_API_KEY || '';
+
+// Helper to add authentication headers
+function getAuthHeaders(): HeadersInit {
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+
+  if (API_KEY) {
+    headers['Authorization'] = `Bearer ${API_KEY}`;
+  }
+
+  return headers;
+}
 
 export interface Collection {
   id: number;
@@ -95,7 +109,7 @@ export async function getCollectionArtworks(collectionId: number): Promise<Artwo
 export async function createCollection(collection: Omit<Collection, 'id' | 'created_at' | 'updated_at'>): Promise<Collection> {
   const response = await fetch(`${API_BASE_URL}/api/collections`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders(),
     body: JSON.stringify(collection),
   });
   if (!response.ok) throw new Error('Failed to create collection');
@@ -106,7 +120,7 @@ export async function createCollection(collection: Omit<Collection, 'id' | 'crea
 export async function updateCollection(id: number, updates: Partial<Collection>): Promise<Collection> {
   const response = await fetch(`${API_BASE_URL}/api/collections/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders(),
     body: JSON.stringify(updates),
   });
   if (!response.ok) throw new Error('Failed to update collection');
@@ -117,6 +131,7 @@ export async function updateCollection(id: number, updates: Partial<Collection>)
 export async function deleteCollection(id: number): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/api/collections/${id}`, {
     method: 'DELETE',
+    headers: getAuthHeaders(),
   });
   if (!response.ok) throw new Error('Failed to delete collection');
 }

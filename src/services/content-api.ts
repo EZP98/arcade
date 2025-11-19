@@ -41,18 +41,26 @@ export interface Exhibition {
 const API_BASE_URL = import.meta.env.PROD
   ? 'https://alf-portfolio-api.eziopappalardo98.workers.dev'
   : 'http://localhost:8787';
+const API_KEY = import.meta.env.VITE_API_KEY || '';
 
 // ========== HELPER FUNCTIONS ==========
 
 async function fetchAPI(endpoint: string, options?: RequestInit): Promise<any> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'Cache-Control': 'no-cache',
+    'Pragma': 'no-cache',
+    ...(options?.headers as Record<string, string>),
+  };
+
+  // Add auth header for write operations
+  if (API_KEY && options?.method && ['POST', 'PUT', 'DELETE'].includes(options.method)) {
+    headers['Authorization'] = `Bearer ${API_KEY}`;
+  }
+
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      'Cache-Control': 'no-cache',
-      'Pragma': 'no-cache',
-      ...options?.headers,
-    },
+    headers,
   });
 
   if (!response.ok) {

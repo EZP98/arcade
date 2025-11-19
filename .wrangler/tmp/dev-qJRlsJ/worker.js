@@ -5,7 +5,7 @@ var __name = (target, value) => __defProp(target, "name", { value, configurable:
 var corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Cache-Control, Pragma"
+  "Access-Control-Allow-Headers": "Content-Type, Cache-Control, Pragma, Authorization"
 };
 function jsonResponse(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -17,6 +17,17 @@ function jsonResponse(data, status = 200) {
   });
 }
 __name(jsonResponse, "jsonResponse");
+function isAuthenticated(request, env) {
+  const authHeader = request.headers.get("Authorization");
+  if (!authHeader) return false;
+  const token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
+  return token === env.API_KEY;
+}
+__name(isAuthenticated, "isAuthenticated");
+function unauthorizedResponse() {
+  return jsonResponse({ error: "Unauthorized - Invalid or missing API key" }, 401);
+}
+__name(unauthorizedResponse, "unauthorizedResponse");
 var worker_default = {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -24,6 +35,10 @@ var worker_default = {
     const method = request.method;
     if (method === "OPTIONS") {
       return new Response(null, { headers: corsHeaders });
+    }
+    const writeOperations = ["POST", "PUT", "DELETE"];
+    if (writeOperations.includes(method) && !isAuthenticated(request, env)) {
+      return unauthorizedResponse();
     }
     try {
       if (path === "/api/artworks" && method === "GET") {
@@ -520,8 +535,61 @@ var worker_default = {
           url: `/images/${obj.key}`,
           size: obj.size,
           uploaded: obj.uploaded.toISOString()
-        }));
+        })).sort((a, b) => new Date(b.uploaded).getTime() - new Date(a.uploaded).getTime());
         return jsonResponse({ images });
+      }
+      if (path === "/api/storage/stats" && method === "GET") {
+        if (!env.IMAGES) {
+          return jsonResponse({ error: "R2 storage not configured" }, 503);
+        }
+        const listed = await env.IMAGES.list();
+        let totalSize = 0;
+        let originalsCount = 0;
+        let originalsSize = 0;
+        let thumbnailsCount = 0;
+        let thumbnailsSize = 0;
+        for (const obj of listed.objects) {
+          totalSize += obj.size;
+          if (obj.key.includes("_thumb")) {
+            thumbnailsCount++;
+            thumbnailsSize += obj.size;
+          } else {
+            originalsCount++;
+            originalsSize += obj.size;
+          }
+        }
+        return jsonResponse({
+          totalFiles: listed.objects.length,
+          totalSize,
+          originals: {
+            count: originalsCount,
+            size: originalsSize
+          },
+          thumbnails: {
+            count: thumbnailsCount,
+            size: thumbnailsSize
+          }
+        });
+      }
+      if (path === "/api/regenerate-thumbnails" && method === "GET") {
+        if (!env.IMAGES) {
+          return jsonResponse({ error: "R2 storage not configured" }, 503);
+        }
+        const listed = await env.IMAGES.list();
+        const originals = listed.objects.filter((obj) => !obj.key.includes("_thumb"));
+        const thumbnails = listed.objects.filter((obj) => obj.key.includes("_thumb"));
+        const missingThumbnails = [];
+        for (const original of originals) {
+          const thumbName = original.key.replace(/\.(jpg|jpeg|png|gif|webp)$/i, "_thumb.$1");
+          const hasThumb = thumbnails.some((t) => t.key === thumbName);
+          if (!hasThumb) {
+            missingThumbnails.push(original.key);
+          }
+        }
+        return jsonResponse({
+          missing: missingThumbnails,
+          count: missingThumbnails.length
+        });
       }
       if (path.match(/^\/images\/.+$/) && method === "GET") {
         if (!env.IMAGES) {
@@ -538,6 +606,39 @@ var worker_default = {
             "Cache-Control": "public, max-age=31536000",
             ...corsHeaders
           }
+        });
+      }
+      if (path.match(/^\/api\/images\/.+\/usage$/) && method === "GET") {
+        const filename = path.split("/")[3];
+        const imageUrl = `/images/${filename}`;
+        const artworksUsage = await env.DB.prepare(
+          "SELECT id, title FROM artworks WHERE image_url = ?"
+        ).bind(imageUrl).all();
+        const collectionsUsage = await env.DB.prepare(
+          "SELECT id, title FROM collections WHERE image_url = ?"
+        ).bind(imageUrl).all();
+        const exhibitionsUsage = await env.DB.prepare(
+          "SELECT id, title FROM exhibitions WHERE image_url = ?"
+        ).bind(imageUrl).all();
+        const usage = {
+          artworks: artworksUsage.results || [],
+          collections: collectionsUsage.results || [],
+          exhibitions: exhibitionsUsage.results || [],
+          total: (artworksUsage.results?.length || 0) + (collectionsUsage.results?.length || 0) + (exhibitionsUsage.results?.length || 0)
+        };
+        return jsonResponse({ usage });
+      }
+      if (path.match(/^\/api\/images\/[^/]+$/) && method === "DELETE") {
+        if (!env.IMAGES) {
+          return jsonResponse({ error: "R2 storage not configured" }, 503);
+        }
+        const filename = path.split("/")[3];
+        await env.IMAGES.delete(filename);
+        const thumbFilename = filename.replace(/\.(jpg|jpeg|png|gif|webp)$/i, "_thumb.$1");
+        await env.IMAGES.delete(thumbFilename);
+        return jsonResponse({
+          message: "Image deleted successfully",
+          filename
         });
       }
       if (path === "/api/newsletter" && method === "POST") {

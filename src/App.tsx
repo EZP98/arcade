@@ -20,10 +20,12 @@ import MediaStorage from './pages/MediaStorage';
 import OperaForm from './pages/OperaForm';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsConditions from './pages/TermsConditions';
+import Login from './pages/Login';
 
 // Import components
 import Navbar from './components/Navbar';
 import SmoothScroll from './components/SmoothScroll';
+import ProtectedRoute from './components/ProtectedRoute';
 
 // Import i18n
 import { LanguageProvider } from './i18n/LanguageContext';
@@ -100,7 +102,7 @@ const LoadingScreen: React.FC = () => {
 function AppContent() {
   const location = useLocation();
   const { isLoading } = useLoading();
-  const showNavbar = !location.pathname.startsWith('/content');
+  const showNavbar = !location.pathname.startsWith('/content') && location.pathname !== '/login';
 
   useEffect(() => {
     // GSAP initial setup
@@ -169,16 +171,17 @@ function AppContent() {
                 <Route path="/" element={<Collezione />} />
                 <Route path="/collezione" element={<Collezione />} />
                 <Route path="/collezione/:id" element={<CollezioneDetail />} />
-                <Route path="/content" element={<Content />} />
-                <Route path="/content/collezione/new" element={<NewCollection />} />
-                <Route path="/content/collezione/:collectionId" element={<CollectionManagement />} />
-                <Route path="/content/collezione/:collectionId/opere" element={<CollectionArtworks />} />
-                <Route path="/content/mostra/new" element={<NewExhibition />} />
-                <Route path="/content/mostra/:exhibitionId" element={<ExhibitionManagement />} />
-                <Route path="/content/critico/new" element={<NewCritic />} />
-                <Route path="/content/critico/:criticId" element={<CriticManagement />} />
-                <Route path="/content/storage" element={<MediaStorage />} />
-                <Route path="/content/opera" element={<OperaForm />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/content" element={<ProtectedRoute><Content /></ProtectedRoute>} />
+                <Route path="/content/collezione/new" element={<ProtectedRoute><NewCollection /></ProtectedRoute>} />
+                <Route path="/content/collezione/:collectionId" element={<ProtectedRoute><CollectionManagement /></ProtectedRoute>} />
+                <Route path="/content/collezione/:collectionId/opere" element={<ProtectedRoute><CollectionArtworks /></ProtectedRoute>} />
+                <Route path="/content/mostra/new" element={<ProtectedRoute><NewExhibition /></ProtectedRoute>} />
+                <Route path="/content/mostra/:exhibitionId" element={<ProtectedRoute><ExhibitionManagement /></ProtectedRoute>} />
+                <Route path="/content/critico/new" element={<ProtectedRoute><NewCritic /></ProtectedRoute>} />
+                <Route path="/content/critico/:criticId" element={<ProtectedRoute><CriticManagement /></ProtectedRoute>} />
+                <Route path="/content/storage" element={<ProtectedRoute><MediaStorage /></ProtectedRoute>} />
+                <Route path="/content/opera" element={<ProtectedRoute><OperaForm /></ProtectedRoute>} />
                 <Route path="/privacy" element={<PrivacyPolicy />} />
                 <Route path="/terms" element={<TermsConditions />} />
               </Routes>
