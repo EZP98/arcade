@@ -431,10 +431,11 @@ const CollectionManagement: React.FC = () => {
               <h2 className="text-2xl font-bold text-white">Opere della Collezione</h2>
               <button
                 onClick={() => setShowAddArtwork(true)}
-                className="px-6 py-3 font-bold uppercase text-white transition-colors"
-                style={{ backgroundColor: 'rgb(240, 45, 110)', fontFamily: 'Montserrat, sans-serif', borderRadius: 0 }}
+                className="w-12 h-12 flex items-center justify-center font-bold text-white text-2xl transition-colors"
+                style={{ backgroundColor: 'rgb(240, 45, 110)', borderRadius: '8px' }}
+                title="Aggiungi Opera"
               >
-                + Aggiungi Opera
+                +
               </button>
             </div>
 
@@ -648,24 +649,26 @@ const CollectionManagement: React.FC = () => {
           </motion.div>
         )}
 
-        {/* Floating Buttons */}
-        <div className="fixed bottom-6 right-6 flex gap-3 z-50">
-          <button
-            onClick={() => navigate(-1)}
-            className="px-6 py-3 font-bold uppercase text-white border hover:bg-white/5 transition-all shadow-lg"
-            style={{ borderColor: 'rgba(255, 255, 255, 0.2)', fontFamily: 'Montserrat, sans-serif', borderRadius: 0, backgroundColor: 'rgba(0, 0, 0, 0.8)' }}
-          >
-            Annulla
-          </button>
-          <button
-            onClick={handleSaveCollection}
-            disabled={saving}
-            className="px-6 py-3 font-bold uppercase text-white transition-all disabled:opacity-50 hover:opacity-90 shadow-lg"
-            style={{ backgroundColor: 'rgb(240, 45, 110)', fontFamily: 'Montserrat, sans-serif', borderRadius: 0 }}
-          >
-            {saving ? 'Salvataggio...' : 'Salva Modifiche'}
-          </button>
-        </div>
+        {/* Floating Buttons - Only show in Info tab */}
+        {activeTab === 'info' && (
+          <div className="fixed bottom-6 right-6 flex gap-3 z-50">
+            <button
+              onClick={() => navigate(-1)}
+              className="px-6 py-3 font-bold uppercase text-white border hover:bg-white/5 transition-all shadow-lg"
+              style={{ borderColor: 'rgba(255, 255, 255, 0.2)', fontFamily: 'Montserrat, sans-serif', borderRadius: 0, backgroundColor: 'rgba(0, 0, 0, 0.8)' }}
+            >
+              Annulla
+            </button>
+            <button
+              onClick={handleSaveCollection}
+              disabled={saving}
+              className="px-6 py-3 font-bold uppercase text-white transition-all disabled:opacity-50 hover:opacity-90 shadow-lg"
+              style={{ backgroundColor: 'rgb(240, 45, 110)', fontFamily: 'Montserrat, sans-serif', borderRadius: 0 }}
+            >
+              {saving ? 'Salvataggio...' : 'Salva Modifiche'}
+            </button>
+          </div>
+        )}
       </div>
     </BackofficeLayout>
   );
