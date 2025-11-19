@@ -446,10 +446,13 @@ const ContentWithCollections: React.FC = () => {
               </div>
               <button
                 onClick={() => navigate('/content/collezione/new')}
-                className="px-6 py-3 font-bold uppercase text-white transition-colors"
-                style={{ backgroundColor: 'rgb(240, 45, 110)', fontFamily: 'Montserrat, sans-serif', borderRadius: 0 }}
+                className="p-3 text-white transition-colors"
+                style={{ backgroundColor: 'rgb(240, 45, 110)', borderRadius: 0 }}
+                title="Aggiungi collezione"
               >
-                + Aggiungi
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
               </button>
             </div>
           )}
@@ -482,10 +485,13 @@ const ContentWithCollections: React.FC = () => {
               </div>
               <button
                 onClick={handleAdd}
-                className="px-6 py-3 font-bold uppercase text-white transition-colors"
-                style={{ backgroundColor: 'rgb(240, 45, 110)', fontFamily: 'Montserrat, sans-serif', borderRadius: 0 }}
+                className="p-3 text-white transition-colors"
+                style={{ backgroundColor: 'rgb(240, 45, 110)', borderRadius: 0 }}
+                title="Aggiungi critico"
               >
-                + Aggiungi
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
               </button>
             </div>
           )}
@@ -518,10 +524,13 @@ const ContentWithCollections: React.FC = () => {
               </div>
               <button
                 onClick={handleAdd}
-                className="px-6 py-3 font-bold uppercase text-white transition-colors"
-                style={{ backgroundColor: 'rgb(240, 45, 110)', fontFamily: 'Montserrat, sans-serif', borderRadius: 0 }}
+                className="p-3 text-white transition-colors"
+                style={{ backgroundColor: 'rgb(240, 45, 110)', borderRadius: 0 }}
+                title="Aggiungi mostra"
               >
-                + Aggiungi
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
               </button>
             </div>
           )}
