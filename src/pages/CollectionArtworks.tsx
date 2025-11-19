@@ -274,12 +274,10 @@ const CollectionArtworks: React.FC = () => {
         ) : (
           <div className="grid gap-6">
             {artworks.map((artwork) => (
-              <motion.div
+              <div
                 key={artwork.id}
                 className="bg-secondary p-6 border rounded-xl"
                 style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
               >
                 {editingId === artwork.id ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -356,6 +354,7 @@ const CollectionArtworks: React.FC = () => {
                       src={artwork.image_url || '/placeholder-artwork.jpg'}
                       alt={artwork.title}
                       className="w-32 h-32 object-cover rounded-lg"
+                      loading="lazy"
                     />
                     <div className="flex-1">
                       <h3 className="text-2xl font-bold mb-2" style={{ color: 'rgb(240, 45, 110)', fontFamily: 'Montserrat, sans-serif' }}>
@@ -394,7 +393,7 @@ const CollectionArtworks: React.FC = () => {
                     </div>
                   </div>
                 )}
-              </motion.div>
+              </div>
             ))}
           </div>
         )}

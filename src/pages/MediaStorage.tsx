@@ -37,6 +37,7 @@ const MediaStorage: React.FC = () => {
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [viewingImage, setViewingImage] = useState<MediaImage | null>(null);
+  const [regenerating, setRegenerating] = useState(false);
 
   const loadImages = useCallback(async () => {
     try {
@@ -240,6 +241,67 @@ const MediaStorage: React.FC = () => {
     });
   };
 
+  const handleRegenerateThumbnails = async () => {
+    if (!confirm('Vuoi rigenerare tutti i thumbnail mancanti?')) return;
+
+    try {
+      setRegenerating(true);
+
+      // Get list of images missing thumbnails
+      const response = await fetch(`${API_BASE_URL}/api/regenerate-thumbnails`);
+      if (!response.ok) throw new Error('Failed to get missing thumbnails');
+
+      const data = await response.json() as { missing: string[], count: number };
+
+      if (data.count === 0) {
+        alert('Tutti i thumbnail sono già presenti!');
+        return;
+      }
+
+      let regenerated = 0;
+
+      // For each missing thumbnail, download image, create thumbnail, and upload
+      for (const filename of data.missing) {
+        try {
+          // Download original image
+          const imgResponse = await fetch(`${API_BASE_URL}/images/${filename}`);
+          if (!imgResponse.ok) continue;
+
+          const blob = await imgResponse.blob();
+          const file = new File([blob], filename, { type: blob.type });
+
+          // Create thumbnail
+          const thumbnail = await createThumbnail(file);
+
+          // Upload thumbnail
+          const thumbFilename = filename.replace(/\.(jpg|jpeg|png|gif|webp)$/i, '_thumb.$1');
+          const formData = new FormData();
+          formData.append('image', thumbnail, thumbFilename);
+
+          const uploadResponse = await fetch(`${API_BASE_URL}/api/upload`, {
+            method: 'POST',
+            body: formData
+          });
+
+          if (uploadResponse.ok) {
+            regenerated++;
+          }
+        } catch (error) {
+          console.error(`Error regenerating thumbnail for ${filename}:`, error);
+        }
+      }
+
+      alert(`Rigenerati ${regenerated} thumbnail su ${data.count}`);
+      await loadImages();
+      await loadStats();
+    } catch (error) {
+      console.error('Error regenerating thumbnails:', error);
+      alert('Errore durante la rigenerazione dei thumbnail');
+    } finally {
+      setRegenerating(false);
+    }
+  };
+
   return (
     <BackofficeLayout>
       <Helmet>
@@ -267,123 +329,143 @@ const MediaStorage: React.FC = () => {
 
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-start justify-between mb-6">
-            <div>
-              <h1 className="text-4xl font-bold text-white uppercase mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                <span style={{ color: 'rgb(240, 45, 110)' }}>Storage</span> Immagini
-              </h1>
-              <p className="text-white/60">
-                Gestisci tutte le immagini caricate su R2
-              </p>
-            </div>
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-4xl font-bold text-white uppercase" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+              <span style={{ color: 'rgb(240, 45, 110)' }}>Storage</span> Immagini
+            </h1>
 
-            {/* Upload Button */}
-            <div>
-              <input
-                type="file"
-                id="file-upload-button"
-                className="hidden"
-                accept="image/*"
-                onChange={handleFileInputChange}
-              />
-              <label
-                htmlFor="file-upload-button"
-                className="inline-block px-6 py-3 font-bold uppercase text-white cursor-pointer transition-all hover:opacity-90"
-                style={{ backgroundColor: 'rgb(240, 45, 110)', fontFamily: 'Montserrat, sans-serif', borderRadius: 0 }}
-              >
-                Carica
-              </label>
+            {/* Search and Upload */}
+            <div className="flex items-center gap-3">
+              {/* Search Bar */}
+              <div className="relative">
+                <label htmlFor="storage-search" className="sr-only">Cerca immagine</label>
+                <input
+                  id="storage-search"
+                  type="text"
+                  placeholder="Cerca immagine..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-64 px-4 py-3 bg-secondary border text-white placeholder-white/40 focus:outline-none focus:border-white/30 transition-colors"
+                  style={{ borderColor: 'rgba(255, 255, 255, 0.1)', borderRadius: 0, fontFamily: 'Montserrat, sans-serif' }}
+                  aria-label="Cerca immagine nello storage"
+                />
+                <svg
+                  className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40 pointer-events-none"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+
+              {/* Upload Button */}
+              <div>
+                <input
+                  type="file"
+                  id="file-upload-button"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleFileInputChange}
+                  aria-label="Seleziona immagine da caricare"
+                />
+                <label
+                  htmlFor="file-upload-button"
+                  className="inline-block px-6 py-3 font-bold uppercase text-white cursor-pointer transition-all hover:opacity-90"
+                  style={{ backgroundColor: 'rgb(240, 45, 110)', fontFamily: 'Montserrat, sans-serif', borderRadius: 0 }}
+                  aria-label="Carica nuova immagine"
+                >
+                  + Carica
+                </label>
+              </div>
+
+              {/* Regenerate Thumbnails Button */}
+              {stats && stats.originals.count > stats.thumbnails.count && (
+                <button
+                  onClick={handleRegenerateThumbnails}
+                  disabled={regenerating}
+                  className="px-6 py-3 font-bold uppercase text-white border transition-all hover:bg-white/5 disabled:opacity-50"
+                  style={{ borderColor: 'rgba(255, 255, 255, 0.3)', fontFamily: 'Montserrat, sans-serif', borderRadius: 0 }}
+                  aria-label="Rigenera thumbnail mancanti"
+                  title={`${stats.originals.count - stats.thumbnails.count} thumbnail mancanti`}
+                >
+                  {regenerating ? 'Rigenerando...' : '🔄 Fix Thumbnails'}
+                </button>
+              )}
             </div>
           </div>
 
-          {/* Search Bar */}
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Cerca immagine..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-3 bg-secondary border text-white placeholder-white/40 focus:outline-none focus:border-white/30 transition-colors"
-              style={{ borderColor: 'rgba(255, 255, 255, 0.1)', borderRadius: 0, fontFamily: 'Montserrat, sans-serif' }}
-            />
-            <svg
-              className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
+          <p className="text-white/60">
+            Gestisci tutte le immagini caricate su R2
+          </p>
         </div>
 
         {/* Storage Stats */}
-        {stats && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-secondary p-6 rounded-xl border mb-8"
-            style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-white uppercase" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                Spazio Occupato
-              </h2>
-              <div className="text-right">
-                <p className="text-3xl font-bold" style={{ color: 'rgb(240, 45, 110)', fontFamily: 'Montserrat, sans-serif' }}>
-                  {formatFileSize(stats.totalSize)}
-                </p>
-                <p className="text-white/60 text-sm">{stats.totalFiles} file totali</p>
-              </div>
-            </div>
+        {stats && (() => {
+          const maxStorageGB = 10; // 10 GB
+          const maxStorage = maxStorageGB * 1024 * 1024 * 1024; // 10GB in bytes
+          const usedPercentage = (stats.totalSize / maxStorage) * 100;
 
-            {/* Progress Bar */}
-            <div className="mb-4">
-              <div className="h-3 bg-black/20 rounded-full overflow-hidden flex">
-                <div
-                  className="transition-all duration-500"
-                  style={{
-                    width: `${(stats.originals.size / stats.totalSize) * 100}%`,
-                    backgroundColor: 'rgb(240, 45, 110)'
-                  }}
-                />
-                <div
-                  className="transition-all duration-500"
-                  style={{
-                    width: `${(stats.thumbnails.size / stats.totalSize) * 100}%`,
-                    backgroundColor: 'rgba(240, 45, 110, 0.4)'
-                  }}
-                />
+          return (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-secondary p-5 rounded-xl border mb-8"
+              style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold text-white uppercase" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                  Spazio Occupato
+                </h2>
+                <div className="text-right">
+                  <p className="text-2xl font-bold" style={{ color: 'rgb(240, 45, 110)', fontFamily: 'Montserrat, sans-serif' }}>
+                    {formatFileSize(stats.totalSize)} / {maxStorageGB} GB
+                  </p>
+                  <p className="text-white/60 text-xs">{stats.totalFiles} file totali · {usedPercentage.toFixed(2)}% usato</p>
+                </div>
               </div>
-            </div>
+
+              {/* Progress Bar */}
+              <div className="mb-3">
+                <div className="h-2 bg-black/20 rounded-full overflow-hidden">
+                  <div
+                    className="h-full transition-all duration-500"
+                    style={{
+                      width: `${Math.min(usedPercentage, 100)}%`,
+                      backgroundColor: usedPercentage > 80 ? 'rgb(239, 68, 68)' : 'rgb(240, 45, 110)'
+                    }}
+                  />
+                </div>
+              </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-black/10 p-4 rounded-lg border border-white/5">
-                <p className="text-white/60 text-sm uppercase mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                  Originali
-                </p>
-                <p className="text-white text-2xl font-bold mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                  {stats.originals.count}
-                </p>
-                <p className="text-white/60 text-xs">
-                  {formatFileSize(stats.originals.size)}
-                </p>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex items-center gap-3 bg-black/10 px-3 py-2 rounded border border-white/5">
+                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'rgb(240, 45, 110)' }}></div>
+                <div className="flex-1">
+                  <p className="text-white text-sm font-bold" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                    {stats.originals.count} Originali
+                  </p>
+                  <p className="text-white/60 text-xs">
+                    {formatFileSize(stats.originals.size)}
+                  </p>
+                </div>
               </div>
-              <div className="bg-black/10 p-4 rounded-lg border border-white/5">
-                <p className="text-white/60 text-sm uppercase mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                  Thumbnails
-                </p>
-                <p className="text-white text-2xl font-bold mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                  {stats.thumbnails.count}
-                </p>
-                <p className="text-white/60 text-xs">
-                  {formatFileSize(stats.thumbnails.size)}
-                </p>
+              <div className="flex items-center gap-3 bg-black/10 px-3 py-2 rounded border border-white/5">
+                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'rgba(240, 45, 110, 0.4)' }}></div>
+                <div className="flex-1">
+                  <p className="text-white text-sm font-bold" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                    {stats.thumbnails.count} Thumbnails
+                  </p>
+                  <p className="text-white/60 text-xs">
+                    {formatFileSize(stats.thumbnails.size)}
+                  </p>
+                </div>
               </div>
             </div>
-          </motion.div>
-        )}
+            </motion.div>
+          );
+        })()}
 
         {/* Upload Confirmation Modal */}
         {selectedFile && (
@@ -541,21 +623,15 @@ const MediaStorage: React.FC = () => {
                 >
                   {/* Image Preview */}
                   <div
-                    className="aspect-video bg-black/20 flex items-center justify-center overflow-hidden cursor-pointer group relative"
+                    className="aspect-video bg-black/20 flex items-center justify-center overflow-hidden cursor-pointer"
                     onClick={() => setViewingImage(image)}
                   >
                     <img
                       src={`${API_BASE_URL}${displayUrl}`}
                       alt={image.filename}
-                      className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                      className="w-full h-full object-cover"
                       loading="lazy"
                     />
-                    {/* Overlay per indicare che è cliccabile */}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                      <svg className="w-12 h-12 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                      </svg>
-                    </div>
                   </div>
 
                   {/* Image Info */}

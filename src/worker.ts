@@ -842,6 +842,34 @@ export default {
         });
       }
 
+      // GET /api/regenerate-thumbnails - Trova immagini senza thumbnail
+      if (path === '/api/regenerate-thumbnails' && method === 'GET') {
+        if (!env.IMAGES) {
+          return jsonResponse({ error: 'R2 storage not configured' }, 503);
+        }
+
+        const listed = await env.IMAGES.list();
+        const originals = listed.objects.filter(obj => !obj.key.includes('_thumb'));
+        const thumbnails = listed.objects.filter(obj => obj.key.includes('_thumb'));
+
+        const missingThumbnails: string[] = [];
+
+        for (const original of originals) {
+          // Generate expected thumbnail filename
+          const thumbName = original.key.replace(/\.(jpg|jpeg|png|gif|webp)$/i, '_thumb.$1');
+          const hasThumb = thumbnails.some(t => t.key === thumbName);
+
+          if (!hasThumb) {
+            missingThumbnails.push(original.key);
+          }
+        }
+
+        return jsonResponse({
+          missing: missingThumbnails,
+          count: missingThumbnails.length
+        });
+      }
+
       // GET /images/:filename - Serve immagine da R2
       if (path.match(/^\/images\/.+$/) && method === 'GET') {
         if (!env.IMAGES) {

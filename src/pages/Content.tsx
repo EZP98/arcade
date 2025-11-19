@@ -779,10 +779,10 @@ const ContentWithCollections: React.FC = () => {
                 {/* ALF Card */}
                 <button
                   onClick={() => setSelectedBioEditor('alf')}
-                  className="bg-secondary p-12 border rounded-xl hover:border-pink-500 transition-all group"
+                  className="bg-secondary p-4 border rounded-xl hover:bg-white/5 cursor-pointer transition-all"
                   style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
                 >
-                  <div className="text-center">
+                  <div className="text-center p-8">
                     <svg
                       width="64"
                       height="64"
@@ -790,7 +790,7 @@ const ContentWithCollections: React.FC = () => {
                       fill="none"
                       stroke="currentColor"
                       strokeWidth="2"
-                      className="mx-auto mb-6 text-white/50 group-hover:text-pink-500 transition-colors"
+                      className="mx-auto mb-6 text-white/50"
                     >
                       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                       <circle cx="12" cy="7" r="4"/>
@@ -807,10 +807,10 @@ const ContentWithCollections: React.FC = () => {
                 {/* STUDIO Card */}
                 <button
                   onClick={() => setSelectedBioEditor('studio')}
-                  className="bg-secondary p-12 border rounded-xl hover:border-pink-500 transition-all group"
+                  className="bg-secondary p-4 border rounded-xl hover:bg-white/5 cursor-pointer transition-all"
                   style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
                 >
-                  <div className="text-center">
+                  <div className="text-center p-8">
                     <svg
                       width="64"
                       height="64"
@@ -818,7 +818,7 @@ const ContentWithCollections: React.FC = () => {
                       fill="none"
                       stroke="currentColor"
                       strokeWidth="2"
-                      className="mx-auto mb-6 text-white/50 group-hover:text-pink-500 transition-colors"
+                      className="mx-auto mb-6 text-white/50"
                     >
                       <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
                       <polyline points="9 22 9 12 15 12 15 22" />
