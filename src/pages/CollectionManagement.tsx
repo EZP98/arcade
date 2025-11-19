@@ -117,15 +117,15 @@ const CollectionManagement: React.FC = () => {
 
     setIsUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', file);
 
       const response = await fetch(`${API_BASE_URL}/api/media/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${import.meta.env.VITE_API_KEY || ''}`
         },
-        body: formData
+        body: uploadFormData
       });
 
       if (!response.ok) throw new Error('Upload failed');
@@ -136,7 +136,7 @@ const CollectionManagement: React.FC = () => {
       await loadImages();
 
       // Auto-select the uploaded image
-      setFormData({ ...formData, image_url: data.url });
+      setFormData(prev => ({ ...prev, image_url: data.url }));
       setShowImagePicker(false);
 
       alert('Immagine caricata con successo!');
