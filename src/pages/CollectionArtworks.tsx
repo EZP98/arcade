@@ -20,7 +20,8 @@ const CollectionArtworks: React.FC = () => {
     year: '',
     technique: '',
     dimensions: '',
-    image_url: ''
+    image_url: '',
+    is_visible: true
   });
 
   useEffect(() => {
@@ -58,14 +59,14 @@ const CollectionArtworks: React.FC = () => {
           ...formData,
           year: formData.year ? parseInt(formData.year) : null,
           collection_id: parseInt(collectionId),
-          is_visible: true,
+          is_visible: formData.is_visible,
           order_index: artworks.length
         })
       });
 
       if (response.ok) {
         setShowAddForm(false);
-        setFormData({ title: '', year: '', technique: '', dimensions: '', image_url: '' });
+        setFormData({ title: '', year: '', technique: '', dimensions: '', image_url: '', is_visible: true });
         loadData();
       }
     } catch (error) {
@@ -86,7 +87,7 @@ const CollectionArtworks: React.FC = () => {
 
       if (response.ok) {
         setEditingId(null);
-        setFormData({ title: '', year: '', technique: '', dimensions: '', image_url: '' });
+        setFormData({ title: '', year: '', technique: '', dimensions: '', image_url: '', is_visible: true });
         loadData();
       }
     } catch (error) {
@@ -117,14 +118,15 @@ const CollectionArtworks: React.FC = () => {
       year: artwork.year?.toString() || '',
       technique: artwork.technique || '',
       dimensions: artwork.dimensions || '',
-      image_url: artwork.image_url || ''
+      image_url: artwork.image_url || '',
+      is_visible: artwork.is_visible !== undefined ? artwork.is_visible : true
     });
   };
 
   const handleCancel = () => {
     setEditingId(null);
     setShowAddForm(false);
-    setFormData({ title: '', year: '', technique: '', dimensions: '', image_url: '' });
+    setFormData({ title: '', year: '', technique: '', dimensions: '', image_url: '', is_visible: true });
   };
 
   if (loading) {
@@ -239,6 +241,50 @@ const CollectionArtworks: React.FC = () => {
                   placeholder="es. /DSCF9079.jpg"
                 />
               </div>
+
+              {/* Visibilità */}
+              <div className="md:col-span-2">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      checked={formData.is_visible}
+                      onChange={(e) => setFormData({ ...formData, is_visible: e.target.checked })}
+                      className="sr-only"
+                    />
+                    <div
+                      style={{
+                        width: '56px',
+                        height: '28px',
+                        borderRadius: '14px',
+                        backgroundColor: formData.is_visible ? 'rgb(240, 45, 110)' : '#4B5563',
+                        transition: 'background-color 0.3s',
+                        position: 'relative'
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: '24px',
+                          height: '24px',
+                          borderRadius: '12px',
+                          backgroundColor: 'white',
+                          position: 'absolute',
+                          top: '2px',
+                          left: formData.is_visible ? '30px' : '2px',
+                          transition: 'left 0.3s',
+                          boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <span className="text-white font-bold" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                    Visibile nel frontend
+                  </span>
+                </label>
+                <p className="text-white/60 text-sm mt-2 ml-16">
+                  Se disattivato, l'opera sarà salvata ma non visibile nel sito pubblico
+                </p>
+              </div>
             </div>
             <div className="flex gap-4 mt-6">
               <button
@@ -331,6 +377,51 @@ const CollectionArtworks: React.FC = () => {
                         style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
                       />
                     </div>
+
+                    {/* Visibilità */}
+                    <div className="md:col-span-2">
+                      <label className="flex items-center gap-3 cursor-pointer">
+                        <div className="relative">
+                          <input
+                            type="checkbox"
+                            checked={formData.is_visible}
+                            onChange={(e) => setFormData({ ...formData, is_visible: e.target.checked })}
+                            className="sr-only"
+                          />
+                          <div
+                            style={{
+                              width: '56px',
+                              height: '28px',
+                              borderRadius: '14px',
+                              backgroundColor: formData.is_visible ? 'rgb(240, 45, 110)' : '#4B5563',
+                              transition: 'background-color 0.3s',
+                              position: 'relative'
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: '24px',
+                                height: '24px',
+                                borderRadius: '12px',
+                                backgroundColor: 'white',
+                                position: 'absolute',
+                                top: '2px',
+                                left: formData.is_visible ? '30px' : '2px',
+                                transition: 'left 0.3s',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                              }}
+                            />
+                          </div>
+                        </div>
+                        <span className="text-white font-bold" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                          Visibile nel frontend
+                        </span>
+                      </label>
+                      <p className="text-white/60 text-sm mt-2 ml-16">
+                        Se disattivato, l'opera sarà salvata ma non visibile nel sito pubblico
+                      </p>
+                    </div>
+
                     <div className="md:col-span-2 flex gap-4">
                       <button
                         onClick={() => handleUpdateArtwork(artwork.id)}
