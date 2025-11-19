@@ -112,7 +112,11 @@ export async function createCollection(collection: Omit<Collection, 'id' | 'crea
     headers: getAuthHeaders(),
     body: JSON.stringify(collection),
   });
-  if (!response.ok) throw new Error('Failed to create collection');
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const errorMessage = errorData.message || errorData.error || 'Failed to create collection';
+    throw new Error(errorMessage);
+  }
   const data = await response.json() as { collection: Collection };
   return data.collection;
 }
