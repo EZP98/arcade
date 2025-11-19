@@ -236,7 +236,7 @@ const ContentWithCollections: React.FC = () => {
         name,
         role,
         text,
-        order_index: 0,
+        order_index: 1,
         is_visible: true
       });
       await loadData();

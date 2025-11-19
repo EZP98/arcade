@@ -5,7 +5,9 @@ import { motion } from 'framer-motion';
 import BackofficeLayout from '../components/BackofficeLayout';
 import { createExhibition } from '../services/exhibitions-api';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8787';
+const API_BASE_URL = import.meta.env.PROD
+  ? 'https://alf-portfolio-api.eziopappalardo98.workers.dev'
+  : 'http://localhost:8787';
 
 // Helper function to get full image URL
 const getImageUrl = (path: string): string => {
@@ -29,7 +31,7 @@ const NewExhibition: React.FC = () => {
     website: '',
     image_url: '',
     slug: '',
-    order_index: 0,
+    order_index: 1,
     is_visible: true
   });
 

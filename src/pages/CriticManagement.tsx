@@ -16,7 +16,7 @@ const CriticManagement: React.FC = () => {
     text: '',
     text_it: '',
     text_en: '',
-    order_index: 0,
+    order_index: 1,
     is_visible: true
   });
 
