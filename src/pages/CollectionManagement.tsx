@@ -5,7 +5,23 @@ import { motion } from 'framer-motion';
 import BackofficeLayout from '../components/BackofficeLayout';
 import { getCollections, updateCollection, Collection, Artwork, getCollectionArtworks } from '../services/collections-api';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8787';
+const API_BASE_URL = import.meta.env.PROD
+  ? 'https://alf-portfolio-api.eziopappalardo98.workers.dev'
+  : 'http://localhost:8787';
+const API_KEY = import.meta.env.VITE_API_KEY || '';
+
+// Helper to add authentication headers
+function getAuthHeaders(): HeadersInit {
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+
+  if (API_KEY) {
+    headers['Authorization'] = `Bearer ${API_KEY}`;
+  }
+
+  return headers;
+}
 
 // Helper function to get full image URL
 const getImageUrl = (path: string): string => {
@@ -105,7 +121,7 @@ const CollectionManagement: React.FC = () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/artworks`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           ...artworkFormData,
           year: artworkFormData.year ? parseInt(artworkFormData.year) : null,
@@ -129,7 +145,7 @@ const CollectionManagement: React.FC = () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/artworks/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           ...artworkFormData,
           year: artworkFormData.year ? parseInt(artworkFormData.year) : null
@@ -151,7 +167,8 @@ const CollectionManagement: React.FC = () => {
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/artworks/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: getAuthHeaders()
       });
 
       if (response.ok) {
