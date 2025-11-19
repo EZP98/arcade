@@ -61,6 +61,70 @@ const MediaStorage: React.FC = () => {
     }
   };
 
+  // Funzione per creare thumbnail
+  const createThumbnail = (file: File): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          // Crea canvas per thumbnail (max 400px)
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error('Canvas context not available'));
+            return;
+          }
+
+          // Calcola dimensioni mantenendo aspect ratio
+          let width = img.width;
+          let height = img.height;
+          const maxSize = 400;
+
+          if (width > height) {
+            if (width > maxSize) {
+              height = (height * maxSize) / width;
+              width = maxSize;
+            }
+          } else {
+            if (height > maxSize) {
+              width = (width * maxSize) / height;
+              height = maxSize;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+
+          // Disegna immagine ridimensionata
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Converti in blob
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                const thumbnailFile = new File(
+                  [blob],
+                  file.name.replace(/\.(jpg|jpeg|png|gif|webp)$/i, '_thumb.$1'),
+                  { type: file.type }
+                );
+                resolve(thumbnailFile);
+              } else {
+                reject(new Error('Failed to create thumbnail blob'));
+              }
+            },
+            file.type,
+            0.85 // Qualità 85%
+          );
+        };
+        img.onerror = () => reject(new Error('Failed to load image'));
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleFileSelect = (file: File) => {
     // Verifica che sia un'immagine
     if (!file.type.startsWith('image/')) {
@@ -81,18 +145,35 @@ const MediaStorage: React.FC = () => {
 
     try {
       setUploading(true);
-      const formData = new FormData();
-      formData.append('file', selectedFile);
 
-      const response = await fetch(`${API_BASE_URL}/api/upload`, {
+      // Carica originale
+      console.log('Uploading original...');
+      const formDataOriginal = new FormData();
+      formDataOriginal.append('file', selectedFile);
+
+      const responseOriginal = await fetch(`${API_BASE_URL}/api/upload`, {
         method: 'POST',
-        body: formData,
+        body: formDataOriginal,
       });
 
-      if (!response.ok) throw new Error('Upload failed');
+      if (!responseOriginal.ok) throw new Error('Upload original failed');
 
-      const result = await response.json();
-      console.log('Upload successful:', result);
+      // Genera e carica thumbnail
+      console.log('Generating thumbnail...');
+      const thumbnail = await createThumbnail(selectedFile);
+
+      console.log('Uploading thumbnail...');
+      const formDataThumbnail = new FormData();
+      formDataThumbnail.append('file', thumbnail);
+
+      const responseThumbnail = await fetch(`${API_BASE_URL}/api/upload`, {
+        method: 'POST',
+        body: formDataThumbnail,
+      });
+
+      if (!responseThumbnail.ok) throw new Error('Upload thumbnail failed');
+
+      console.log('Upload complete!');
 
       // Ricarica la lista delle immagini
       await loadImages();
@@ -243,7 +324,7 @@ const MediaStorage: React.FC = () => {
           style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
         >
           <h2 className="text-2xl font-bold text-white uppercase mb-6" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-            Immagini Caricate ({images.length})
+            Immagini Caricate ({images.filter(img => !img.filename.includes('_thumb')).length})
           </h2>
 
           {loading ? (
@@ -254,7 +335,15 @@ const MediaStorage: React.FC = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {images.map((image) => (
+              {images
+                .filter(img => !img.filename.includes('_thumb')) // Mostra solo originali
+                .map((image) => {
+                  // Cerca il thumbnail corrispondente
+                  const thumbnailFilename = image.filename.replace(/\.(jpg|jpeg|png|gif|webp)$/i, '_thumb.$1');
+                  const thumbnail = images.find(img => img.filename === thumbnailFilename);
+                  const displayUrl = thumbnail ? thumbnail.url : image.url;
+
+                  return (
                 <div
                   key={image.filename}
                   className="bg-background rounded-lg overflow-hidden border border-white/10 hover:border-white/20 transition-all"
@@ -262,7 +351,7 @@ const MediaStorage: React.FC = () => {
                   {/* Image Preview */}
                   <div className="aspect-video bg-black/20 flex items-center justify-center overflow-hidden">
                     <img
-                      src={`${API_BASE_URL}${image.url}`}
+                      src={`${API_BASE_URL}${displayUrl}`}
                       alt={image.filename}
                       className="w-full h-full object-cover"
                       loading="lazy"
@@ -308,7 +397,8 @@ const MediaStorage: React.FC = () => {
                     </div>
                   </div>
                 </div>
-              ))}
+              );
+            })}
             </div>
           )}
         </motion.div>
