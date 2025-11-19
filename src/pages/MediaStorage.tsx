@@ -426,32 +426,6 @@ const MediaStorage: React.FC = () => {
                   />
                 </div>
               </div>
-
-            {/* Stats Grid */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex items-center gap-3 bg-black/10 px-3 py-2 rounded border border-white/5">
-                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'rgb(240, 45, 110)' }}></div>
-                <div className="flex-1">
-                  <p className="text-white text-sm font-bold" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                    {stats.originals.count} Originali
-                  </p>
-                  <p className="text-white/60 text-xs">
-                    {formatFileSize(stats.originals.size)}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 bg-black/10 px-3 py-2 rounded border border-white/5">
-                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'rgba(240, 45, 110, 0.4)' }}></div>
-                <div className="flex-1">
-                  <p className="text-white text-sm font-bold" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                    {stats.thumbnails.count} Thumbnails
-                  </p>
-                  <p className="text-white/60 text-xs">
-                    {formatFileSize(stats.thumbnails.size)}
-                  </p>
-                </div>
-              </div>
-            </div>
             </motion.div>
           );
         })()}
@@ -636,7 +610,7 @@ const MediaStorage: React.FC = () => {
                   return (
                 <div
                   key={image.filename}
-                  className="bg-background rounded-lg overflow-hidden border border-white/10 hover:border-white/20 transition-all"
+                  className="bg-background overflow-hidden"
                 >
                   {/* Image Preview */}
                   <div
@@ -651,7 +625,7 @@ const MediaStorage: React.FC = () => {
                   </div>
 
                   {/* Image Info */}
-                  <div className="p-4 space-y-3">
+                  <div className="space-y-3">
                     <div>
                       <p className="text-white text-sm font-bold truncate" title={image.filename}>
                         {image.filename}
