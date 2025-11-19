@@ -169,6 +169,20 @@ const BackofficeLayout: React.FC<BackofficeLayoutProps> = ({ children }) => {
 
         {/* Footer Sidebar */}
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t space-y-2" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+          {/* Home Button */}
+          <button
+            onClick={() => navigate('/')}
+            className="w-full flex items-center justify-center border rounded-lg transition-all hover:bg-white/5 font-bold uppercase text-xs tracking-wide text-white/50 hover:text-white/80 px-3 py-3"
+            style={{ borderColor: 'rgba(255, 255, 255, 0.1)', fontFamily: 'Montserrat, sans-serif' }}
+            title="Torna al Sito"
+            aria-label="Torna al Sito"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+              <polyline points="9 22 9 12 15 12 15 22" />
+            </svg>
+          </button>
+
           {/* Logout Button */}
           <button
             onClick={handleLogout}
@@ -181,20 +195,6 @@ const BackofficeLayout: React.FC<BackofficeLayoutProps> = ({ children }) => {
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
               <polyline points="16 17 21 12 16 7"/>
               <line x1="21" y1="12" x2="9" y2="12"/>
-            </svg>
-          </button>
-
-          {/* Home Button */}
-          <button
-            onClick={() => navigate('/')}
-            className="w-full flex items-center justify-center border rounded-lg transition-all hover:bg-white/5 font-bold uppercase text-xs tracking-wide text-white/50 hover:text-white/80 px-3 py-3"
-            style={{ borderColor: 'rgba(255, 255, 255, 0.1)', fontFamily: 'Montserrat, sans-serif' }}
-            title="Torna al Sito"
-            aria-label="Torna al Sito"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-              <polyline points="9 22 9 12 15 12 15 22" />
             </svg>
           </button>
         </div>
