@@ -20,7 +20,7 @@ const ExhibitionManagement: React.FC = () => {
     website: '',
     image_url: '',
     slug: '',
-    order_index: 0,
+    order_index: 1,
     is_visible: true
   });
 
