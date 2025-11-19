@@ -5,6 +5,7 @@ const AUTH_PASSWORD = import.meta.env.VITE_BACKOFFICE_PASSWORD || 'AdeleLoFeudo2
 
 interface AuthState {
   isAuthenticated: boolean;
+  isLoading: boolean;
   login: (password: string) => boolean;
   loginWithGoogle: (email: string) => void;
   logout: () => void;
@@ -12,6 +13,7 @@ interface AuthState {
 
 export const useAuth = (): AuthState => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     // Controlla se già autenticato
@@ -19,6 +21,7 @@ export const useAuth = (): AuthState => {
     if (authToken === 'authenticated' || authToken?.startsWith('google:')) {
       setIsAuthenticated(true);
     }
+    setIsLoading(false);
   }, []);
 
   const login = (password: string): boolean => {
@@ -40,7 +43,7 @@ export const useAuth = (): AuthState => {
     setIsAuthenticated(false);
   };
 
-  return { isAuthenticated, login, loginWithGoogle, logout };
+  return { isAuthenticated, isLoading, login, loginWithGoogle, logout };
 };
 
 // Hook per rilevare dispositivo mobile
