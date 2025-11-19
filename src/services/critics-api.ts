@@ -6,6 +6,20 @@
 const API_BASE_URL = import.meta.env.PROD
   ? 'https://alf-portfolio-api.eziopappalardo98.workers.dev'
   : 'http://localhost:8787';
+const API_KEY = import.meta.env.VITE_API_KEY || '';
+
+// Helper to add authentication headers
+function getAuthHeaders(): HeadersInit {
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+
+  if (API_KEY) {
+    headers['Authorization'] = `Bearer ${API_KEY}`;
+  }
+
+  return headers;
+}
 
 export interface Critic {
   id: number;
@@ -45,7 +59,7 @@ export async function getCritic(id: number): Promise<Critic> {
 export async function createCritic(critic: Omit<Critic, 'id' | 'created_at' | 'updated_at'>): Promise<Critic> {
   const response = await fetch(`${API_BASE_URL}/api/critics`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders(),
     body: JSON.stringify(critic),
   });
   if (!response.ok) throw new Error('Failed to create critic');
@@ -56,7 +70,7 @@ export async function createCritic(critic: Omit<Critic, 'id' | 'created_at' | 'u
 export async function updateCritic(id: number, updates: Partial<Critic>): Promise<Critic> {
   const response = await fetch(`${API_BASE_URL}/api/critics/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders(),
     body: JSON.stringify(updates),
   });
   if (!response.ok) throw new Error('Failed to update critic');
@@ -67,6 +81,7 @@ export async function updateCritic(id: number, updates: Partial<Critic>): Promis
 export async function deleteCritic(id: number): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/api/critics/${id}`, {
     method: 'DELETE',
+    headers: getAuthHeaders(),
   });
   if (!response.ok) throw new Error('Failed to delete critic');
 }

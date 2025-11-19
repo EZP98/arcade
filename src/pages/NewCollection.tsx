@@ -5,6 +5,17 @@ import { motion } from 'framer-motion';
 import BackofficeLayout from '../components/BackofficeLayout';
 import { createCollection } from '../services/collections-api';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8787';
+
+// Helper function to get full image URL
+const getImageUrl = (path: string): string => {
+  if (!path) return '';
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+  return `${API_BASE_URL}${path}`;
+};
+
 const NewCollection: React.FC = () => {
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
@@ -181,7 +192,7 @@ const NewCollection: React.FC = () => {
                 </label>
                 <div className="border rounded-lg overflow-hidden" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
                   <img
-                    src={formData.image_url}
+                    src={getImageUrl(formData.image_url)}
                     alt="Anteprima"
                     className="w-full h-64 object-cover"
                     onError={(e) => {

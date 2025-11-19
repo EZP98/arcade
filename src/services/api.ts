@@ -3,6 +3,20 @@
  */
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8787';
+const API_KEY = import.meta.env.VITE_API_KEY || '';
+
+// Helper to add authentication headers
+function getAuthHeaders(): HeadersInit {
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+
+  if (API_KEY) {
+    headers['Authorization'] = `Bearer ${API_KEY}`;
+  }
+
+  return headers;
+}
 
 // Types
 export interface Artwork {
@@ -77,7 +91,7 @@ export async function createArtwork(artwork: {
 }): Promise<Artwork> {
   const response = await fetch(`${API_BASE_URL}/api/artworks`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders(),
     body: JSON.stringify(artwork),
   });
   if (!response.ok) throw new Error('Failed to create artwork');
@@ -94,7 +108,7 @@ export async function updateArtwork(id: number, artwork: {
 }): Promise<Artwork> {
   const response = await fetch(`${API_BASE_URL}/api/artworks/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders(),
     body: JSON.stringify(artwork),
   });
   if (!response.ok) throw new Error('Failed to update artwork');
@@ -105,6 +119,7 @@ export async function updateArtwork(id: number, artwork: {
 export async function deleteArtwork(id: number): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/api/artworks/${id}`, {
     method: 'DELETE',
+    headers: getAuthHeaders(),
   });
   if (!response.ok) throw new Error('Failed to delete artwork');
 }
@@ -140,7 +155,7 @@ export async function createSection(section: {
 }): Promise<Section> {
   const response = await fetch(`${API_BASE_URL}/api/sections`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders(),
     body: JSON.stringify(section),
   });
   if (!response.ok) throw new Error('Failed to create section');
@@ -156,7 +171,7 @@ export async function updateSection(id: number, section: {
 }): Promise<Section> {
   const response = await fetch(`${API_BASE_URL}/api/sections/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders(),
     body: JSON.stringify(section),
   });
   if (!response.ok) throw new Error('Failed to update section');
@@ -167,6 +182,7 @@ export async function updateSection(id: number, section: {
 export async function deleteSection(id: number): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/api/sections/${id}`, {
     method: 'DELETE',
+    headers: getAuthHeaders(),
   });
   if (!response.ok) throw new Error('Failed to delete section');
 }
@@ -194,7 +210,7 @@ export async function updateContentBlock(key: string, content: {
 }): Promise<ContentBlock> {
   const response = await fetch(`${API_BASE_URL}/api/content/${key}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders(),
     body: JSON.stringify(content),
   });
   if (!response.ok) throw new Error('Failed to update content block');
@@ -231,7 +247,7 @@ export interface NewsletterSubscriber {
 export async function subscribeToNewsletter(email: string): Promise<{ message: string; email?: string; alreadySubscribed?: boolean }> {
   const response = await fetch(`${API_BASE_URL}/api/newsletter`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders(),
     body: JSON.stringify({ email }),
   });
 
@@ -250,6 +266,7 @@ export async function getNewsletterSubscribers(): Promise<NewsletterSubscriber[]
 export async function deleteNewsletterSubscriber(id: number): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/api/newsletter/${id}`, {
     method: 'DELETE',
+    headers: getAuthHeaders(),
   });
   if (!response.ok) throw new Error('Failed to delete newsletter subscriber');
 }

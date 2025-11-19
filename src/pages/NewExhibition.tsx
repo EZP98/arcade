@@ -5,6 +5,17 @@ import { motion } from 'framer-motion';
 import BackofficeLayout from '../components/BackofficeLayout';
 import { createExhibition } from '../services/exhibitions-api';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8787';
+
+// Helper function to get full image URL
+const getImageUrl = (path: string): string => {
+  if (!path) return '';
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+  return `${API_BASE_URL}${path}`;
+};
+
 const NewExhibition: React.FC = () => {
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
@@ -273,7 +284,7 @@ const NewExhibition: React.FC = () => {
               {formData.image_url && (
                 <div className="mt-4">
                   <img
-                    src={formData.image_url}
+                    src={getImageUrl(formData.image_url)}
                     alt="Anteprima"
                     className="h-40 object-cover rounded-lg"
                     onError={(e) => {

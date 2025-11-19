@@ -7,6 +7,17 @@ import { getCollections, updateCollection, Collection, Artwork, getCollectionArt
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8787';
 
+// Helper function to get full image URL
+const getImageUrl = (path: string): string => {
+  if (!path) return '';
+  // Se è già un URL completo, ritornalo così com'è
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+  // Se è un path relativo, costruisci l'URL completo per R2
+  return `${API_BASE_URL}${path}`;
+};
+
 const CollectionManagement: React.FC = () => {
   const { collectionId } = useParams<{ collectionId: string }>();
   const navigate = useNavigate();
@@ -342,7 +353,7 @@ const CollectionManagement: React.FC = () => {
                 <div className="md:col-span-2">
                   <label className="block text-white mb-2 font-bold">Anteprima Immagine</label>
                   <img
-                    src={formData.image_url}
+                    src={getImageUrl(formData.image_url)}
                     alt="Anteprima"
                     className="w-64 h-40 object-cover rounded-lg border"
                     style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
@@ -532,7 +543,7 @@ const CollectionManagement: React.FC = () => {
                     ) : (
                       <div className="flex items-start gap-6">
                         <img
-                          src={artwork.image_url || '/placeholder-artwork.jpg'}
+                          src={getImageUrl(artwork.image_url || '/placeholder-artwork.jpg')}
                           alt={artwork.title}
                           className="w-32 h-32 object-cover rounded-lg"
                         />
