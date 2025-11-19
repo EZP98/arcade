@@ -256,28 +256,21 @@ const CollectionManagement: React.FC = () => {
     });
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background pt-24 px-6 flex items-center justify-center">
-        <div className="text-white">Caricamento...</div>
-      </div>
-    );
-  }
-
-  if (!collection) {
-    return (
-      <div className="min-h-screen bg-background pt-24 px-6">
-        <div className="text-white">Collezione non trovata</div>
-      </div>
-    );
-  }
-
   return (
     <BackofficeLayout>
       <Helmet>
-        <title>Dettaglio {collection.title} - Gestione Backoffice</title>
+        <title>{collection ? `Dettaglio ${collection.title}` : 'Caricamento...'} - Gestione Backoffice</title>
       </Helmet>
 
+      {loading ? (
+        <div className="max-w-5xl mx-auto py-20 px-12 flex items-center justify-center min-h-[60vh]">
+          <div className="text-white text-xl">Caricamento...</div>
+        </div>
+      ) : !collection ? (
+        <div className="max-w-5xl mx-auto py-20 px-12">
+          <div className="text-white text-xl">Collezione non trovata</div>
+        </div>
+      ) : (
       <div className="max-w-5xl mx-auto py-20 px-12">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
@@ -744,6 +737,7 @@ const CollectionManagement: React.FC = () => {
           </div>
         )}
       </div>
+      )}
     </BackofficeLayout>
   );
 };
