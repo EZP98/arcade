@@ -8,6 +8,26 @@ import { getExhibitions, updateExhibition, type Exhibition } from '../services/e
 import { useToast } from '../components/Toast';
 import { translateText } from '../services/translation-api';
 
+// Get API base URL for image URLs
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+
+// Helper function to convert relative image URLs to absolute
+const getImageUrl = (url: string | null | undefined): string => {
+  if (!url) return '/opera.png';
+
+  // If URL is already absolute, return as is
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+
+  // If URL is relative, prepend API base URL
+  if (url.startsWith('/images/')) {
+    return `${API_BASE_URL}${url}`;
+  }
+
+  return url;
+};
+
 const LANGUAGES = [
   { code: 'it', label: 'Italiano 🇮🇹', flag: '🇮🇹' },
   { code: 'en', label: 'English 🇬🇧', flag: '🇬🇧' },
@@ -457,7 +477,7 @@ const TranslationManagement: React.FC = () => {
                         <div className="flex items-center gap-3">
                           {'image_url' in item && item.image_url && (
                             <img
-                              src={item.image_url}
+                              src={getImageUrl(item.image_url)}
                               alt={getItemTitle(item)}
                               className="w-12 h-12 object-cover rounded-lg"
                             />
