@@ -159,12 +159,12 @@ const CollezioneDetail: React.FC = () => {
         <div className="max-w-4xl mx-auto">
           {/* Header con titolo collezione */}
           <motion.div
-            className="text-center"
+            className="mb-8 text-center"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <h1 className="text-[42px] font-bold text-white uppercase mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+            <h1 className="text-[42px] font-bold text-white uppercase" style={{ fontFamily: 'Montserrat, sans-serif' }}>
               {collection.title}
             </h1>
             <p className="text-white/60 text-[16px]">
