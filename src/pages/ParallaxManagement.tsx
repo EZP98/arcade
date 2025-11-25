@@ -223,7 +223,7 @@ const ParallaxManagement: React.FC = () => {
             {/* Testo Superiore (Italiano) */}
             <div>
               <label className="block text-white mb-2 font-bold">
-                Testo Superiore (Italiano)
+                Testo Superiore
               </label>
               <textarea
                 value={formData.text_top_it}
@@ -241,7 +241,7 @@ const ParallaxManagement: React.FC = () => {
             {/* Testo Inferiore (Italiano) */}
             <div>
               <label className="block text-white mb-2 font-bold">
-                Testo Inferiore (Italiano)
+                Testo Inferiore
               </label>
               <textarea
                 value={formData.text_bottom_it}

@@ -81,6 +81,15 @@ const CriticManagement: React.FC = () => {
     }
   };
 
+  // Check if there are unsaved changes
+  const hasChanges = React.useMemo(() => {
+    return formData.name_it !== originalData.name_it ||
+           formData.role_it !== originalData.role_it ||
+           formData.text_it !== originalData.text_it ||
+           formData.order_index !== originalData.order_index ||
+           formData.is_visible !== originalData.is_visible;
+  }, [formData, originalData]);
+
   const handleDelete = async () => {
     if (!criticId) return;
 
@@ -225,37 +234,6 @@ const CriticManagement: React.FC = () => {
                 required
               />
             </div>
-
-            {/* Ordine */}
-            <div>
-              <label className="block text-white mb-2 font-bold">
-                Ordine di visualizzazione
-              </label>
-              <input
-                type="number"
-                value={formData.order_index}
-                onChange={(e) => setFormData({ ...formData, order_index: parseInt(e.target.value) || 0 })}
-                className="w-full px-4 py-3 bg-background text-white border rounded-lg focus:outline-none focus:border-pink-500 transition-colors"
-                style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
-              />
-              <p className="text-white/60 text-sm mt-1">
-                Numero più basso = prima posizione
-              </p>
-            </div>
-          </div>
-
-          {/* Preview */}
-          <div className="mt-8 p-6 bg-background rounded-lg border" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
-            <h3 className="text-white font-bold mb-4">Anteprima:</h3>
-            <div className="space-y-2">
-              <h4 className="text-xl font-bold" style={{ color: 'rgb(240, 45, 110)' }}>
-                {formData.name_it || 'Nome Critico'}
-              </h4>
-              <p className="text-white/60">{formData.role_it || 'Ruolo'}</p>
-              <p className="text-white italic mt-4">
-                "{formData.text_it || 'Recensione...'}"
-              </p>
-            </div>
           </div>
 
           {/* Elimina Critico */}
@@ -272,7 +250,8 @@ const CriticManagement: React.FC = () => {
 
         </motion.form>
 
-        {/* Floating Buttons */}
+        {/* Floating Buttons - Show only when there are unsaved changes */}
+        {hasChanges && (
         <div className="fixed bottom-6 right-6 flex gap-3 z-50">
           <button
             type="button"
@@ -292,6 +271,7 @@ const CriticManagement: React.FC = () => {
             {saving ? 'Salvataggio...' : 'Salva Modifiche'}
           </button>
         </div>
+        )}
       </motion.div>
 
       {/* Toast notifications */}

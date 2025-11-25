@@ -34,7 +34,7 @@ const LanguageSelector: React.FC = () => {
     <div className="floating-language-selector fixed bottom-8 right-8 z-[1000] hidden md:block">
       {/* Language Menu */}
       <div
-        className={`absolute bottom-full right-0 mb-2 bg-black/90 backdrop-blur-md border border-white/20 rounded-xl py-2 shadow-xl min-w-[140px] transition-all duration-300 origin-bottom-right ${
+        className={`absolute bottom-full right-0 mb-2 bg-black/90 backdrop-blur-md border border-white/20 rounded-xl py-1.5 shadow-xl min-w-[120px] transition-all duration-300 origin-bottom-right ${
           isOpen
             ? 'opacity-100 scale-100 translate-y-0'
             : 'opacity-0 scale-95 translate-y-2 pointer-events-none'
@@ -47,12 +47,12 @@ const LanguageSelector: React.FC = () => {
               setLanguage(lang.code);
               setIsOpen(false);
             }}
-            className={`w-full px-4 py-2 text-left hover:bg-white/10 transition-colors flex items-center gap-2 ${
+            className={`w-full px-2.5 py-1.5 text-left hover:bg-white/10 transition-colors flex items-center gap-1.5 text-[14px] ${
               language === lang.code ? 'text-accent' : 'text-white'
             }`}
             style={{ fontFamily: 'Montserrat, sans-serif' }}
           >
-            <span>{lang.flag}</span>
+            <span className="text-[14px]">{lang.flag}</span>
             <span className="font-bold">{lang.label}</span>
           </button>
         ))}
@@ -61,10 +61,10 @@ const LanguageSelector: React.FC = () => {
       {/* Floating Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-14 h-14 rounded-full bg-black/80 backdrop-blur-md border border-white/30 hover:border-white/60 transition-all flex items-center justify-center shadow-lg hover:shadow-xl"
+        className="w-12 h-12 rounded-full bg-black/80 backdrop-blur-md border border-white/30 hover:border-white/60 transition-all flex items-center justify-center shadow-lg hover:shadow-xl"
         aria-label="Select language"
       >
-        <span className="text-2xl">{currentLanguage?.flag}</span>
+        <span className="text-xl">{currentLanguage?.flag}</span>
       </button>
     </div>
   );

@@ -22,6 +22,9 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsConditions from './pages/TermsConditions';
 import Login from './pages/Login';
 import TranslationManagement from './pages/TranslationManagement';
+import AlfManagement from './pages/AlfManagement';
+import StudioManagement from './pages/StudioManagement';
+import ParallaxManagement from './pages/ParallaxManagement';
 
 // Import components
 import Navbar from './components/Navbar';
@@ -184,6 +187,9 @@ function AppContent() {
                 <Route path="/content/critico/new" element={<ProtectedRoute><NewCritic /></ProtectedRoute>} />
                 <Route path="/content/critico/:criticId" element={<ProtectedRoute><CriticManagement /></ProtectedRoute>} />
                 <Route path="/content/traduzioni" element={<ProtectedRoute><TranslationManagement /></ProtectedRoute>} />
+                <Route path="/content/alf" element={<ProtectedRoute><AlfManagement /></ProtectedRoute>} />
+                <Route path="/content/studio" element={<ProtectedRoute><StudioManagement /></ProtectedRoute>} />
+                <Route path="/content/parallax" element={<ProtectedRoute><ParallaxManagement /></ProtectedRoute>} />
                 <Route path="/content/storage" element={<ProtectedRoute><MediaStorage /></ProtectedRoute>} />
                 <Route path="/content/opera" element={<ProtectedRoute><OperaForm /></ProtectedRoute>} />
                 <Route path="/privacy" element={<PrivacyPolicy />} />

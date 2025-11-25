@@ -28,6 +28,21 @@ const ExhibitionManagement: React.FC = () => {
     is_visible: true
   });
 
+  // Original data to track changes
+  const [originalData, setOriginalData] = useState({
+    title_it: '',
+    subtitle_it: '',
+    location_it: '',
+    date: '',
+    description_it: '',
+    info_it: '',
+    website: '',
+    image_url: '',
+    slug: '',
+    order_index: 1,
+    is_visible: true
+  });
+
   useEffect(() => {
     loadExhibition();
   }, [exhibitionId]);
@@ -38,7 +53,7 @@ const ExhibitionManagement: React.FC = () => {
     setLoading(true);
     try {
       const exhibition = await getExhibition(parseInt(exhibitionId));
-      setFormData({
+      const data = {
         title_it: (exhibition as any).title_it || exhibition.title,
         subtitle_it: (exhibition as any).subtitle_it || exhibition.subtitle || '',
         location_it: (exhibition as any).location_it || exhibition.location,
@@ -50,7 +65,9 @@ const ExhibitionManagement: React.FC = () => {
         slug: exhibition.slug,
         order_index: exhibition.order_index,
         is_visible: exhibition.is_visible
-      });
+      };
+      setFormData(data);
+      setOriginalData(data);
     } catch (error) {
       console.error('Error loading exhibition:', error);
       setToast({ message: 'Errore nel caricamento della mostra', type: 'error' });
@@ -79,6 +96,7 @@ const ExhibitionManagement: React.FC = () => {
         is_visible: formData.is_visible
       });
       setToast({ message: 'Mostra aggiornata con successo', type: 'success' });
+      loadExhibition();
     } catch (error) {
       console.error('Error updating exhibition:', error);
       setToast({ message: 'Errore nell\'aggiornamento della mostra', type: 'error' });
@@ -86,6 +104,21 @@ const ExhibitionManagement: React.FC = () => {
       setSaving(false);
     }
   };
+
+  // Check if there are unsaved changes
+  const hasChanges = React.useMemo(() => {
+    return formData.title_it !== originalData.title_it ||
+           formData.subtitle_it !== originalData.subtitle_it ||
+           formData.location_it !== originalData.location_it ||
+           formData.date !== originalData.date ||
+           formData.description_it !== originalData.description_it ||
+           formData.info_it !== originalData.info_it ||
+           formData.website !== originalData.website ||
+           formData.image_url !== originalData.image_url ||
+           formData.slug !== originalData.slug ||
+           formData.order_index !== originalData.order_index ||
+           formData.is_visible !== originalData.is_visible;
+  }, [formData, originalData]);
 
   const handleDelete = async () => {
     if (!exhibitionId) return;
@@ -344,7 +377,8 @@ const ExhibitionManagement: React.FC = () => {
 
         </motion.form>
 
-        {/* Floating Buttons */}
+        {/* Floating Buttons - Show only when there are unsaved changes */}
+        {hasChanges && (
         <div className="fixed bottom-6 right-6 flex gap-3 z-50">
           <button
             type="button"
@@ -364,6 +398,7 @@ const ExhibitionManagement: React.FC = () => {
             {saving ? 'Salvataggio...' : 'Salva Modifiche'}
           </button>
         </div>
+        )}
       </motion.div>
 
       {/* Toast notifications */}

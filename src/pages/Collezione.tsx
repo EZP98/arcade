@@ -267,25 +267,27 @@ const LanguageSwitcher: React.FC = () => {
       ref={dropdownRef}
       className="fixed bottom-6 right-6 z-50 hidden md:block"
       style={{
-        backdropFilter: 'blur(5px)',
-        backgroundColor: 'rgba(255, 255, 255, 0.2)',
-        borderRadius: '7px',
-        padding: '8px'
+        backdropFilter: 'blur(10px)',
+        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+        borderRadius: '12px',
+        padding: '4px',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        transition: 'all 0.3s ease'
       }}
     >
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2 bg-black rounded hover:opacity-90 transition-opacity"
+        className="flex items-center gap-1.5 px-3 py-1.5 bg-black/50 rounded-lg hover:bg-black/70 transition-all"
         style={{
-          boxShadow: 'rgba(0, 0, 0, 0.15) 0px 4px 8px 0px',
-          minWidth: '140px'
+          boxShadow: 'rgba(0, 0, 0, 0.2) 0px 2px 4px 0px',
+          minWidth: '90px'
         }}
       >
-        <span className="font-body text-[14px] font-medium text-white tracking-tight flex items-center gap-2">
-          <span>{currentLang.flag}</span>
-          <span>{currentLang.name}</span>
+        <span className="font-body text-[12px] font-medium text-white tracking-tight flex items-center gap-1.5">
+          <span className="text-[16px]">{currentLang.flag}</span>
+          <span className="hidden lg:inline">{currentLang.name}</span>
           <svg
-            className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+            className={`w-3 h-3 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -298,22 +300,23 @@ const LanguageSwitcher: React.FC = () => {
       {/* Dropdown Menu */}
       {isOpen && (
         <div
-          className="absolute bottom-full mb-2 right-0 bg-black rounded shadow-lg overflow-hidden"
+          className="absolute bottom-full mb-2 right-0 bg-black/90 rounded-xl shadow-lg overflow-hidden backdrop-blur-md animate-in fade-in slide-in-from-bottom-2 duration-200"
           style={{
-            boxShadow: 'rgba(0, 0, 0, 0.25) 0px 8px 16px 0px',
-            minWidth: '140px'
+            boxShadow: 'rgba(0, 0, 0, 0.3) 0px 8px 24px 0px',
+            minWidth: '140px',
+            border: '1px solid rgba(255, 255, 255, 0.1)'
           }}
         >
           {languages.map(lang => (
             <button
               key={lang.code}
               onClick={() => handleLanguageSelect(lang.code)}
-              className="w-full px-4 py-2 text-left font-body text-[14px] font-medium text-white tracking-tight hover:bg-[rgb(40,40,40)] transition-colors flex items-center gap-2"
+              className="w-full px-2.5 py-1.5 text-left font-body text-[11px] font-medium text-white tracking-tight hover:bg-white/10 transition-all flex items-center gap-1.5"
               style={{
-                backgroundColor: language === lang.code ? 'rgb(40, 40, 40)' : 'transparent'
+                backgroundColor: language === lang.code ? 'rgba(255, 255, 255, 0.15)' : 'transparent'
               }}
             >
-              <span>{lang.flag}</span>
+              <span className="text-[12px]">{lang.flag}</span>
               <span>{lang.name}</span>
             </button>
           ))}
@@ -674,12 +677,9 @@ const Collezione: React.FC = () => {
       if (textBottom) setParallaxTextBottom(textBottom);
     }
 
-    // Studio immagine dal database
+    // Studio immagine dal database (non più da localStorage)
     if (studioData?.image_url) {
       setStudioImage(studioData.image_url);
-    } else {
-      const savedStudioImage = localStorage.getItem('studio-image');
-      if (savedStudioImage) setStudioImage(savedStudioImage);
     }
 
     // Studio paragrafi dal database
@@ -699,36 +699,28 @@ const Collezione: React.FC = () => {
       }
     }
 
-    // ALF immagine e paragrafi
-    const savedAlfImage = localStorage.getItem('alf-image');
-    if (savedAlfImage) setAlfImage(savedAlfImage);
-
-    // Biografia content - carica prima da localStorage per struttura multi-paragrafo
-    const savedBioContent = localStorage.getItem('artist-bio-enhanced');
-    if (savedBioContent) {
-      try {
-        const bioData = JSON.parse(savedBioContent);
-        // Usa la lingua corrente per recuperare i paragrafi giusti
-        const langKey = language === 'zh-TW' ? 'it' : language;
-
-        if (bioData.alf?.[langKey]?.paragraphs) {
-          setAlfParagraphs(bioData.alf[langKey].paragraphs);
-        } else if (bioData.alf?.it?.paragraphs) {
-          setAlfParagraphs(bioData.alf.it.paragraphs);
-        }
-      } catch (error) {
-        console.error('Error parsing bio content:', error);
-      }
+    // ALF immagine dal database (non più da localStorage)
+    if (biography && (biography as any).image_url) {
+      setAlfImage((biography as any).image_url);
     }
 
-    // Se non ci sono dati in localStorage per ALF, usa biografia dal database
-    if (!savedBioContent && biography) {
-      const bioText = getTranslatedField(biography, 'text', language);
+    // Biografia content - carica dal database
+    if (biography) {
+      // Prova prima a caricare i paragrafi separati dal database
+      const para1 = (biography as any).paragraph1_it || '';
+      const para2 = (biography as any).paragraph2_it || '';
+      const para3 = (biography as any).paragraph3_it || '';
+      const para4 = (biography as any).paragraph4_it || '';
 
-      // Dividi il testo in paragrafi (separati da doppio a capo)
-      if (bioText) {
-        const paragraphs = bioText.split('\n\n').filter(p => p.trim());
-        setAlfParagraphs(paragraphs);
+      if (para1 || para2 || para3 || para4) {
+        setAlfParagraphs([para1, para2, para3, para4].filter(p => p.trim()));
+      } else {
+        // Fallback: usa il campo text per retrocompatibilità
+        const bioText = getTranslatedField(biography, 'text', language);
+        if (bioText) {
+          const paragraphs = bioText.split('\n\n').filter(p => p.trim());
+          setAlfParagraphs(paragraphs);
+        }
       }
     }
   }, [language, biography, parallaxData, studioData]);

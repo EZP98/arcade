@@ -98,9 +98,14 @@ const TranslationManagement: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [editingItem, setEditingItem] = useState<Collection | Critic | Exhibition | null>(null);
   const [formData, setFormData] = useState<TranslationFormData>({});
+  const [originalFormData, setOriginalFormData] = useState<TranslationFormData>({});
   const [saving, setSaving] = useState(false);
   const [translating, setTranslating] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+
+  const hasChanges = React.useMemo(() => {
+    return JSON.stringify(formData) !== JSON.stringify(originalFormData);
+  }, [formData, originalFormData]);
 
   useEffect(() => {
     loadData();
@@ -131,7 +136,7 @@ const TranslationManagement: React.FC = () => {
 
     if ('location' in item) {
       // It's an Exhibition
-      setFormData({
+      const exhibitionData = {
         title_it: item.title_it || '',
         title_en: item.title_en || '',
         title_es: item.title_es || '',
@@ -167,10 +172,12 @@ const TranslationManagement: React.FC = () => {
         info_ja: item.info_ja || '',
         info_zh: item.info_zh || '',
         info_zh_tw: item.info_zh_tw || '',
-      });
+      };
+      setFormData(exhibitionData);
+      setOriginalFormData(exhibitionData);
     } else if ('title' in item) {
       // It's a Collection
-      setFormData({
+      const collectionData = {
         title_it: item.title_it || '',
         title_en: item.title_en || '',
         title_es: item.title_es || '',
@@ -185,10 +192,12 @@ const TranslationManagement: React.FC = () => {
         description_ja: item.description_ja || '',
         description_zh: item.description_zh || '',
         description_zh_tw: item.description_zh_tw || '',
-      });
+      };
+      setFormData(collectionData);
+      setOriginalFormData(collectionData);
     } else {
       // It's a Critic
-      setFormData({
+      const criticData = {
         text_it: item.text_it || '',
         text_en: item.text_en || '',
         text_es: item.text_es || '',
@@ -196,7 +205,9 @@ const TranslationManagement: React.FC = () => {
         text_ja: item.text_ja || '',
         text_zh: item.text_zh || '',
         text_zh_tw: item.text_zh_tw || '',
-      });
+      };
+      setFormData(criticData);
+      setOriginalFormData(criticData);
     }
   };
 
@@ -727,7 +738,7 @@ const TranslationManagement: React.FC = () => {
                 </button>
                 <button
                   onClick={handleSave}
-                  disabled={saving || translating}
+                  disabled={saving || translating || !hasChanges}
                   className="px-6 py-2 bg-accent text-white rounded-lg font-bold text-sm hover:opacity-90 transition-opacity uppercase disabled:opacity-50"
                   style={{ fontFamily: 'Montserrat, sans-serif' }}
                 >

@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import BackofficeLayout from '../components/BackofficeLayout';
 import BackofficeLoader from '../components/BackofficeLoader';
 import Toast from '../components/Toast';
+import ConfirmModal from '../components/ConfirmModal';
 import ImageWithFallback from '../components/ImageWithFallback';
 import { optimizeImageComplete, createThumbnail } from '../utils/imageOptimization';
 
@@ -56,6 +57,7 @@ const MediaStorage: React.FC = () => {
     } | null;
   } | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [showRegenerateModal, setShowRegenerateModal] = useState(false);
 
   const loadImages = useCallback(async () => {
     try {
@@ -324,10 +326,9 @@ const MediaStorage: React.FC = () => {
   };
 
   const handleRegenerateThumbnails = async () => {
-    if (!confirm('Vuoi rigenerare tutti i thumbnail mancanti?')) return;
-
     try {
       setRegenerating(true);
+      setShowRegenerateModal(false);
 
       // Get list of images missing thumbnails
       const response = await fetch(`${API_BASE_URL}/api/regenerate-thumbnails`);
@@ -336,7 +337,7 @@ const MediaStorage: React.FC = () => {
       const data = await response.json() as { missing: string[], count: number };
 
       if (data.count === 0) {
-        alert('Tutti i thumbnail sono già presenti!');
+        setToast({ message: 'Tutti i thumbnail sono già presenti!', type: 'info' });
         return;
       }
 
@@ -373,12 +374,12 @@ const MediaStorage: React.FC = () => {
         }
       }
 
-      alert(`Rigenerati ${regenerated} thumbnail su ${data.count}`);
+      setToast({ message: `Rigenerati ${regenerated} thumbnail su ${data.count}`, type: 'success' });
       await loadImages();
       await loadStats();
     } catch (error) {
       console.error('Error regenerating thumbnails:', error);
-      alert('Errore durante la rigenerazione dei thumbnail');
+      setToast({ message: 'Errore durante la rigenerazione dei thumbnail', type: 'error' });
     } finally {
       setRegenerating(false);
     }
@@ -793,7 +794,7 @@ const MediaStorage: React.FC = () => {
             {/* Regenerate Thumbnails Button */}
             {stats && stats.originals.count > stats.thumbnails.count && (
               <button
-                onClick={handleRegenerateThumbnails}
+                onClick={() => setShowRegenerateModal(true)}
                 disabled={regenerating}
                 className="p-2 text-white border transition-all hover:bg-white/5 disabled:opacity-50"
                 style={{ borderColor: 'rgba(255, 255, 255, 0.2)', borderRadius: 0 }}
@@ -947,6 +948,18 @@ const MediaStorage: React.FC = () => {
           )}
         </motion.div>
       </motion.div>
+
+      {/* Regenerate Thumbnails Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showRegenerateModal}
+        onClose={() => setShowRegenerateModal(false)}
+        onConfirm={handleRegenerateThumbnails}
+        title="Rigenera Thumbnail"
+        message="Vuoi rigenerare tutti i thumbnail mancanti?"
+        confirmText="Ok"
+        cancelText="Annulla"
+        confirmButtonColor="rgb(240, 45, 110)"
+      />
 
       {/* Toast notifications */}
       {toast && (

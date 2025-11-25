@@ -96,6 +96,13 @@ const ContentWithCollections: React.FC = () => {
   const [draggedCollection, setDraggedCollection] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
+  // Preview Modal & Drag and Drop for Critics
+  const [showPreviewModalCritics, setShowPreviewModalCritics] = useState(false);
+  const [previewCritics, setPreviewCritics] = useState<Critic[]>([]);
+  const [originalPreviewCritics, setOriginalPreviewCritics] = useState<Critic[]>([]);
+  const [draggedCritic, setDraggedCritic] = useState<number | null>(null);
+  const [dragOverIndexCritics, setDragOverIndexCritics] = useState<number | null>(null);
+
   // Toast notification
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
@@ -578,6 +585,13 @@ const ContentWithCollections: React.FC = () => {
     setShowPreviewModal(true);
   };
 
+  const handleOpenPreviewCritics = () => {
+    const sortedCritics = [...critics].sort((a, b) => a.order_index - b.order_index);
+    setPreviewCritics(sortedCritics);
+    setOriginalPreviewCritics(sortedCritics);
+    setShowPreviewModalCritics(true);
+  };
+
   const handleClosePreview = () => {
     setShowPreviewModal(false);
     setDraggedCollection(null);
@@ -589,6 +603,13 @@ const ContentWithCollections: React.FC = () => {
     if (previewCollections.length !== originalPreviewCollections.length) return true;
     return previewCollections.some((col, idx) =>
       col.id !== originalPreviewCollections[idx]?.id
+    );
+  };
+
+  const hasOrderChangedCritics = () => {
+    if (previewCritics.length !== originalPreviewCritics.length) return true;
+    return previewCritics.some((critic, idx) =>
+      critic.id !== originalPreviewCritics[idx]?.id
     );
   };
 
@@ -641,6 +662,62 @@ const ContentWithCollections: React.FC = () => {
       handleClosePreview();
     } catch (error) {
       console.error('Error saving collection order:', error);
+      setToast({ message: 'Errore nel salvare l\'ordine', type: 'error' });
+    }
+  };
+
+  // Critics drag and drop handlers
+  const handleCriticDragStart = (index: number) => {
+    setDraggedCritic(index);
+  };
+
+  const handleCriticDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    setDragOverIndexCritics(index);
+  };
+
+  const handleCriticDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    if (draggedCritic === null) return;
+
+    const newCritics = [...previewCritics];
+    const draggedItem = newCritics[draggedCritic];
+    newCritics.splice(draggedCritic, 1);
+    newCritics.splice(dropIndex, 0, draggedItem);
+
+    // Update order_index for all critics
+    const updatedCritics = newCritics.map((critic, idx) => ({
+      ...critic,
+      order_index: idx + 1
+    }));
+
+    setPreviewCritics(updatedCritics);
+    setDraggedCritic(null);
+    setDragOverIndexCritics(null);
+  };
+
+  const handleCriticDragEnd = () => {
+    setDraggedCritic(null);
+    setDragOverIndexCritics(null);
+  };
+
+  const handleSaveCriticOrder = async () => {
+    try {
+      // Save the new order to the database
+      await Promise.all(
+        previewCritics.map(critic =>
+          updateCritic(critic.id, { order_index: critic.order_index })
+        )
+      );
+
+      // Reload critics
+      await loadData();
+      setToast({ message: 'Ordine salvato con successo!', type: 'success' });
+      setShowPreviewModalCritics(false);
+      setDraggedCritic(null);
+      setDragOverIndexCritics(null);
+    } catch (error) {
+      console.error('Error saving critic order:', error);
       setToast({ message: 'Errore nel salvare l\'ordine', type: 'error' });
     }
   };
@@ -749,6 +826,17 @@ const ContentWithCollections: React.FC = () => {
                   <path d="m21 21-4.35-4.35" />
                 </svg>
               </div>
+              <button
+                onClick={handleOpenPreviewCritics}
+                className="p-3 text-white transition-colors hover:bg-white/10"
+                style={{ backgroundColor: 'rgb(30, 30, 30)', borderRadius: 0, border: '1px solid rgba(255, 255, 255, 0.1)' }}
+                title="Anteprima e riordina critici"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </button>
               <button
                 onClick={handleAdd}
                 className="p-3 text-white transition-colors"
@@ -1242,6 +1330,142 @@ const ContentWithCollections: React.FC = () => {
           </button>
           <button
             onClick={handleSaveCollectionOrder}
+            className="px-6 py-3 font-bold uppercase text-white transition-all hover:opacity-90 shadow-lg"
+            style={{
+              backgroundColor: 'rgb(240, 45, 110)',
+              fontFamily: 'Montserrat, sans-serif',
+              borderRadius: 0
+            }}
+          >
+            Salva Ordine
+          </button>
+        </div>
+      )}
+
+      {/* Critics Preview Modal */}
+      <Modal
+        isOpen={showPreviewModalCritics}
+        onClose={() => {
+          setShowPreviewModalCritics(false);
+          setDraggedCritic(null);
+          setDragOverIndexCritics(null);
+        }}
+        maxWidth="4xl"
+        showCloseButton={false}
+      >
+        {/* Header */}
+        <div className="bg-secondary border-b px-6 py-5 flex items-center justify-between" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+          <div>
+            <h2 className="text-2xl font-bold text-white uppercase" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+              Anteprima <span style={{ color: 'rgb(240, 45, 110)' }}>Critici</span>
+            </h2>
+            <p className="text-white/60 text-sm mt-1">Trascina per riordinare</p>
+          </div>
+          <button
+            onClick={() => {
+              setShowPreviewModalCritics(false);
+              setDraggedCritic(null);
+              setDragOverIndexCritics(null);
+            }}
+            className="text-white/60 hover:text-white transition-colors"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Critics List */}
+        <div className="p-6">
+          <div className="space-y-4">
+            {previewCritics.map((critic, index) => (
+              <motion.div
+                key={critic.id}
+                draggable
+                onDragStart={() => handleCriticDragStart(index)}
+                onDragOver={(e) => handleCriticDragOver(e, index)}
+                onDrop={(e) => handleCriticDrop(e, index)}
+                onDragEnd={handleCriticDragEnd}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{
+                  opacity: draggedCritic === index ? 0.5 : 1,
+                  y: dragOverIndexCritics === index ? -5 : 0
+                }}
+                transition={{ duration: 0.2 }}
+                className="cursor-move group relative bg-secondary p-6 border rounded-xl"
+                style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
+              >
+                {/* Order Badge */}
+                <div className="absolute -top-3 -left-3 z-10 bg-white text-black w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg shadow-lg" style={{ backgroundColor: 'rgb(240, 45, 110)' }}>
+                  {index + 1}
+                </div>
+
+                {/* Drag Handle */}
+                <div className="absolute -top-3 -right-3 z-10 bg-background border border-white/20 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-lg">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
+                  </svg>
+                </div>
+
+                {/* Critic Content */}
+                <div className="flex-1">
+                  <h3 className="text-2xl font-bold mb-2" style={{ color: 'rgb(240, 45, 110)', fontFamily: 'Montserrat, sans-serif' }}>
+                    {critic.name_it || critic.name}
+                  </h3>
+                  <p className="text-white/80 mb-3" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                    {critic.role}
+                  </p>
+                  <p className="text-white/60 italic text-sm">
+                    {critic.quote_it || critic.text ? `"${(critic.quote_it || critic.text).substring(0, 150)}..."` : 'Testo non disponibile'}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Helper Text */}
+          {draggedCritic !== null && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-6 p-4 border bg-white/5"
+              style={{ borderRadius: '8px', borderColor: 'rgba(255, 255, 255, 0.1)' }}
+            >
+              <div className="flex items-center gap-3 text-white/80">
+                <svg className="w-5 h-5 flex-shrink-0" style={{ color: 'rgb(240, 45, 110)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p className="text-sm">
+                  Trascina il critico nella posizione desiderata e rilascia per riordinare
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </div>
+
+      </Modal>
+
+      {/* Floating Buttons for Critics - Show only if order changed */}
+      {showPreviewModalCritics && hasOrderChangedCritics() && (
+        <div className="fixed bottom-6 right-6 flex gap-3 z-[10001]">
+          <button
+            onClick={() => {
+              setShowPreviewModalCritics(false);
+              setDraggedCritic(null);
+              setDragOverIndexCritics(null);
+            }}
+            className="px-6 py-3 font-bold uppercase text-white border hover:bg-white/5 transition-all shadow-lg"
+            style={{
+              borderColor: 'rgba(255, 255, 255, 0.2)',
+              fontFamily: 'Montserrat, sans-serif',
+              borderRadius: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.8)'
+            }}
+          >
+            Annulla
+          </button>
+          <button
+            onClick={handleSaveCriticOrder}
             className="px-6 py-3 font-bold uppercase text-white transition-all hover:opacity-90 shadow-lg"
             style={{
               backgroundColor: 'rgb(240, 45, 110)',

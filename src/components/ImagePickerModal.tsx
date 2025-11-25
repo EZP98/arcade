@@ -71,7 +71,7 @@ const ImagePickerModal: React.FC<ImagePickerModalProps> = ({ isOpen, onClose, on
       const uploadFormDataOptimized = new FormData();
       uploadFormDataOptimized.append('file', optimized);
 
-      const responseOptimized = await fetch(`${API_BASE_URL}/api/media/upload`, {
+      const responseOptimized = await fetch(`${API_BASE_URL}/api/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${import.meta.env.VITE_API_KEY || ''}`
@@ -88,7 +88,7 @@ const ImagePickerModal: React.FC<ImagePickerModalProps> = ({ isOpen, onClose, on
       const uploadFormDataThumbnail = new FormData();
       uploadFormDataThumbnail.append('file', thumbnail);
 
-      const responseThumbnail = await fetch(`${API_BASE_URL}/api/media/upload`, {
+      const responseThumbnail = await fetch(`${API_BASE_URL}/api/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${import.meta.env.VITE_API_KEY || ''}`
