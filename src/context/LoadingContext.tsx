@@ -9,25 +9,21 @@ interface LoadingContextType {
 const LoadingContext = createContext<LoadingContextType | undefined>(undefined);
 
 export const LoadingProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Controlla se il loading è già stato mostrato in questa sessione
-  const [hasShownLoading, setHasShownLoading] = useState(() => {
-    return sessionStorage.getItem('hasShownLoading') === 'true';
-  });
-
-  const [isLoading, setIsLoading] = useState(!hasShownLoading);
+  // Mostra sempre il loading all'avvio
+  const [hasShownLoading, setHasShownLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!hasShownLoading && isLoading) {
-      // Dopo 3 secondi, nascondi il loading e salva che è stato mostrato
+    if (isLoading) {
+      // Dopo 3 secondi, nascondi il loading
       const timer = setTimeout(() => {
         setIsLoading(false);
         setHasShownLoading(true);
-        sessionStorage.setItem('hasShownLoading', 'true');
       }, 3000);
 
       return () => clearTimeout(timer);
     }
-  }, [hasShownLoading, isLoading]);
+  }, [isLoading]);
 
   return (
     <LoadingContext.Provider value={{ hasShownLoading, isLoading, setIsLoading }}>

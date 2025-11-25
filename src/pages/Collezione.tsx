@@ -726,24 +726,24 @@ const Collezione: React.FC = () => {
   }, [language, biography, parallaxData, studioData]);
 
   useEffect(() => {
-    // Avvia le animazioni
+    // Avvia le animazioni dopo che il loading screen è scomparso (3 secondi)
 
     const ctx = gsap.context(() => {
-      // Hero animations
+      // Hero animations - iniziano dopo il loading screen
       gsap.fromTo(titleRef.current,
         { y: 30, opacity: 0 },
-        { y: 0, opacity: 1, duration: 3, delay: 0.5, ease: "power2.out" }
+        { y: 0, opacity: 1, duration: 3, delay: 3.5, ease: "power2.out" }
       );
 
       gsap.fromTo(subtitleRef.current,
         { y: 20, opacity: 0 },
-        { y: 0, opacity: 1, duration: 2.8, delay: 0.8, ease: "power2.out" }
+        { y: 0, opacity: 1, duration: 2.8, delay: 3.8, ease: "power2.out" }
       );
 
       // Hero image animation
       gsap.fromTo('.hero-image',
-        { y: 30, opacity: 0, scale: 0.98 },
-        { y: 0, opacity: 1, scale: 1, duration: 3.2, delay: 1.1, ease: "power2.out" }
+        { y: 15, opacity: 0, scale: 0.99 },
+        { y: 0, opacity: 1, scale: 1, duration: 4.5, delay: 4.1, ease: "power2.out" }
       );
 
       // Hero fade out on scroll
